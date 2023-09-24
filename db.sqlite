@@ -84,3 +84,42 @@ CREATE TABLE IF NOT EXISTS Session (
     expiration_time DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
+
+-- Insert a New User:
+INSERT INTO User (email, user_name, password, display_name, profile_image, bio, auth_method)
+VALUES ('example@email.com', 'username', 'password123', 'John Doe', NULL, 'A short bio', 'email');
+
+-- Retrieve User Information:
+SELECT * FROM User WHERE user_id = 1;
+
+-- Insert a New Recipe:
+INSERT INTO Recipe (user_id, title, description, difficulty, dish_image)
+VALUES (1, 'Delicious Pasta', 'A recipe for pasta', 3, NULL);
+
+-- Retrieve All Recipes by a User:
+INSERT INTO Ingredient (name) VALUES ('Pasta');
+INSERT INTO Ingredient (name) VALUES ('Tomato Sauce');
+
+INSERT INTO RecipeIngredient (recipe_id, ingredient_id, amount)
+VALUES (1, 1, '200g'), (1, 2, '1 cup');
+
+-- Retrieve Ingredients for a Recipe:
+SELECT i.name, ri.amount
+FROM Ingredient i
+JOIN RecipeIngredient ri ON i.ingredient_id = ri.ingredient_id
+WHERE ri.recipe_id = 1;
+
+-- Add a Comment to a Recipe:
+INSERT INTO Comment (recipe_id, user_id, message, parent_id, timestamp)
+VALUES (1, 1, 'This recipe is great!', NULL, CURRENT_TIMESTAMP);
+
+-- Retrieve Comments for a Recipe:
+SELECT * FROM Comment WHERE recipe_id = 1;
+
+-- Update User Profile Information:
+UPDATE User
+SET display_name = 'Updated Name', bio = 'Updated bio'
+WHERE user_id = 1;
+
+-- Delete a Recipe:
+DELETE FROM Recipe WHERE recipe_id = 1;
