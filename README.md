@@ -6,14 +6,23 @@ Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.o
     - Look up what [index](https://www.sqlitetutorial.net/sqlite-index/) is and how it might improve the performance
 - [ ] Reevaluate the database
     - [ ] Test out the database [on a browser](http://sqlfiddle.com/) or on vscode
-        - [ ] Create a user 
-            - [ ] Different users and one with the same email/username
-        - [ ] Create a session
+        - [x] Create a user 
+            - [x] Different users and one with the same email/username
         - [ ] Create a recipe with a couple of ingredients, instructions and score
-            - [ ] Different usernames same title 
-            - [ ] One user with the same title
+            - [ ] [Create a mock json for how something could look like](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md)
+            - [x] Instructions
+                - [x] Insert new instructions
+                - [x] Delete instructions
+                - [x] Swap instructions
+            - [x] Different usernames with same title (Will work)
+            - [x] One user with the same title (Won't work)
+            - [ ] Score multiple recipes
+                - Standard
         - [ ] Save a Recipe for a user
             - [ ] Save the same recipe for multiple users.
         - [ ] Create a comment
             - [ ] Try a comment chain
+            - [ ] Get comments for a recipe
 - [ ] Play around with Hono.js to understand it.
+- [ ] Create units test for the same db queries before implementing the backend.
+    - [ ] Session test iaf.
