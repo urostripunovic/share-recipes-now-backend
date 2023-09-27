@@ -81,7 +81,7 @@ JOIN
 WHERE
     U.user_name = 'username' ORDER BY instruction_order;
 
-The JSON file would look like the following:
+### The JSON file would look like the following:
 {
     "user_id",
     "user_name",

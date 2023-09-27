@@ -9,7 +9,7 @@ Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.o
         - [x] Create a user 
             - [x] Different users and one with the same email/username
         - [ ] Create a recipe with a couple of ingredients, instructions and score
-            - [ ] [Create a mock json for how something could look like](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md)
+            - [ ] [Create a mock json for how something could look like](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries#the-json-file-would-look-like-the-following.md)
             - [x] Instructions
                 - [x] Insert new instructions
                 - [x] Delete instructions
