@@ -54,7 +54,6 @@ WHERE
     U.user_name = 'username';
 
 SELECT
-    R.recipe_id,
     I.name AS ingredient_name,
     RI.amount
 FROM
@@ -69,7 +68,6 @@ WHERE
     U.user_name = 'username';
 
 SELECT
-    R.recipe_id,
     I.instruction_order,
     I.instruction
 FROM
@@ -99,6 +97,7 @@ WHERE
 This would most likely be the hardest part of updating the recipe since the others just requires one to either take away an ingredient, remove a recipe or just remove a step.
 
 *I need a way to insert instructions in an incremental manner as well as pair each step with a recipe as to not clutter the database with a bunch of instructions that are loosely coupled and increment in different manners and this is only the insertion part.*
+
 INSERT INTO Instruction (recipe_id, instruction_order, instruction) -- Insert to the table in increments start from 0
 VALUES (
     1,
@@ -107,15 +106,21 @@ VALUES (
 );
 
 *Nothing note worthy other than the fact that the instruction will be edited*
+
 UPDATE Instruction SET instruction = 'Your new instruction text' WHERE recipe_id = 1 AND instruction_order = 1;
 
 *This is for when a user wants to delete a instruction and the instructions list updated accordingly*
+
 DELETE FROM Instruction WHERE recipe_id = y AND instruction_order = x; -- x, y are the changeable variables, y comes from the url and x the index
+
 UPDATE Instruction -- Update the step order once the 
+
 SET instruction_order = instruction_order - 1
+
 WHERE recipe_id = y AND instruction_order > x;
 
 *This is for when a user switches the orders of instructions. Is it needed? no but I would look really cool when presenting it to future employers and ps: fuck my life this was hard to do. Why was it hard to do? Well since I've haven't touched SQL in more than 3 years I forgot the fact that when working with **KEY/UNIQUE CONSTRAINTS** you have to avoid violations so I spent 5 hours just trying to understand why I just couldn't change the pair when I could before, and when was before? That was when `instruction_order` didn't have a constraint before I decided to change the table to have UNIQUE pairs. When thinking about it this isn't really that hard to do, delete the two `instruction_orders` in question and the just insert them normally but my thick head wanted to solve this in a more eloquent way. As I'm typing this after looking into how to solve this problem for 5 hours I regret trying to solve it in a more fancy way but once I've cooled of I'll be happy that I know of this as a future reference.*
+
 UPDATE Instruction -- 1 and 3 are the index of our instructions and thus changeable now
     SET instruction_order = (CASE WHEN instruction_order = 1 THEN -3 ELSE -1 END)
     WHERE instruction_order in (1, 3);
@@ -123,7 +128,7 @@ UPDATE Instruction -- 1 and 3 are the index of our instructions and thus changea
 UPDATE Instruction -- To fix the **KEY/UNIQUE CONSTRAINTS**
     SET instruction_order = - instruction_order
     WHERE instruction_order < 0;
-
+    
 SELECT * FROM Instruction WHERE recipe_id = 1 ORDER BY instruction_order;
 
 ## Manipulate the Recipe:
