@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS Recipe (
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     difficulty INTEGER NOT NULL CHECK (difficulty >= 0 AND difficulty <= 5),
+    time INTEGER NOT NULL CHECK (time >= 5),
     dish_image BLOB,
     UNIQUE (user_id, title),
     FOREIGN KEY (user_id) REFERENCES User(user_id)
@@ -58,15 +59,15 @@ CREATE TABLE IF NOT EXISTS Instruction (
 );
 
 -- Kommentarer på recept
-CREATE TABLE IF NOT EXISTS Comment (
+CREATE TABLE IF NOT EXISTS Comments (
     comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
     recipe_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
+    user_name INTEGER NOT NULL,
     message TEXT,
     parent_id INTEGER,
     timestamp TIMESTAMP,
     FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id),
-    FOREIGN KEY (user_id) REFERENCES User(user_id)
+    FOREIGN KEY (user_name) REFERENCES User(user_name)
 );
 
 -- Receptbetyg från användare
