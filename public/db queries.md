@@ -70,7 +70,7 @@ FROM
     User U
 JOIN
     Recipe R ON U.user_id = R.user_id
-LEFT JOIN
+JOIN
     Score S ON R.recipe_id = S.recipe_id
 WHERE
     U.user_name = 'username'
