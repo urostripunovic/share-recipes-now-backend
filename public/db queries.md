@@ -55,8 +55,10 @@ After implementing and testing the database I would also like the following tabl
 ### A Users recipe with a specific title JSON
 Data representation for the recipe, the edit page for a user will not contain the comments
 ```sql
--- Retrieve a specific recipe with a title for the user 'username' and include scores:
+-- Users recipe along with all the good stuff.
 SELECT
+    U.user_id,
+    U.user_name,
     R.recipe_id,
     R.title,
     R.description,
@@ -74,6 +76,7 @@ WHERE
     U.user_name = 'username'
     AND R.title = 'Delicious Pasta';
 
+-- Ingredients
 SELECT
     I.name AS ingredient_name,
     RI.amount
@@ -88,6 +91,7 @@ JOIN
 WHERE
     U.user_name = 'username';
 
+-- Instructions
 SELECT
     I.instruction_order,
     I.instruction
@@ -99,8 +103,23 @@ JOIN
     Instruction I ON R.recipe_id = I.recipe_id
 WHERE
     U.user_name = 'username';
-```
 
+-- Comments
+SELECT
+    C.comment_id,
+    U.user_name,
+    C.message,
+    C.parent_id
+FROM
+    Comments C
+JOIN
+    Recipe R ON C.recipe_id = R.recipe_id
+JOIN
+    User U ON C.user_id = u.user_id
+WHERE
+    R.recipe_id = 1; -- Comes from the recipe_id of the title from the user_name
+```
+The `JSON` file could look like the following:
 ```JSON
 {
     "user_id",
@@ -121,18 +140,133 @@ WHERE
 ### User JSON
 This file will display the information related to the user, such as their recipes, saved recipes as well as their comments
 ```sql
+SELECT 
+    user_id, email, user_name, display_name, profile_image, bio, auth_method 
+FROM Users;
 ```
+With the following `JSON` file:
+```JSON
+{
+      "user_id",
+      "email",
+      "user_name",
+      "display_name",
+      "profile_image",
+      "bio",
+      "auth_method"
+    }
+```
+
 ### Search JSON
-This file will return the ingredients in the database as well as recipes related to that ingredient, or just match the text to an ingredient.
+This file will return the ingredients in the database that were used to create a recipe. Clicking on the ingredient will take you to another page with all the recipes that used this ingredient. There is a key word in SQL called LIKE together with a couple of %
 ```sql
+SELECT name FROM Ingredient WHERE name LIKE '%Tomato%';
+```
+And the JSON would look like the following:
+```JSON
+{
+    "ingredients": []
+}
+```
+### Search page JSON
+When the ingredient has been clicked we would like to the get all the recipes that use this ingredient.
+```sql
+
+```
+And the JSON would look like the following:
+```JSON
+{
+    "recipes": [
+        "user_id",
+        "user_name",
+        "recipe_id",
+        "title",
+        "score",
+        "difficulty",
+        "time",
+        "image",
+    ]
+}
 ```
 ### Top Recipes JSON
-This file will return the top rated recipes for the site, a rating above 4.2 I think.
+This file will return the top rated recipes for the site, a rating above 4.2 I think... Yeah that's good enough.
 ```sql
+SELECT 
+    U.user_id,
+    U.user_name,
+    R.recipe_id, 
+    R.title, 
+    AVG(S.score) AS average_score,
+    R.difficulty,
+    R.time,
+    R.dish_image AS image
+FROM Recipe AS R
+INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
+INNER JOIN User AS U ON R.user_id = U.user_id
+GROUP BY 
+    U.user_id,
+    U.user_name,
+    R.recipe_id,
+    R.title,
+    R.difficulty,
+    R.time,
+    R.dish_image
+HAVING AVG(S.score) >= 4.2;
+```
+The following JSON file contains:
+```JSON
+{
+    "recipes": [
+        "user_id",
+        "user_name",
+        "recipe_id",
+        "title",
+        "score",
+        "difficulty",
+        "time",
+        "image",
+    ]
+}
 ```
 ### Less Than 30 min Recipes JSON
-This file will return recipes that take less than 20 min to cook.
+This file will return recipes that take less than 30 min to cook. The funny thing is that the SQL code is exactly the same so there will be only one part in the backend where I change the code.
 ```sql
+SELECT 
+    U.user_id,
+    U.user_name,
+    R.recipe_id, 
+    R.title, 
+    AVG(S.score) AS average_score,
+    R.difficulty,
+    R.time,
+    R.dish_image AS image
+FROM Recipe AS R
+INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
+INNER JOIN User AS U ON R.user_id = U.user_id
+GROUP BY 
+    U.user_id,
+    U.user_name,
+    R.recipe_id,
+    R.title,
+    R.difficulty,
+    R.time,
+    R.dish_image
+HAVING R.time < 30;
+```
+The following JSON file is also exactly the same:
+```JSON
+{
+    "recipes": [
+        "user_id",
+        "user_name",
+        "recipe_id",
+        "title",
+        "score",
+        "difficulty",
+        "time",
+        "image",
+    ]
+}
 ```
 ## Manipulate the Instructions of a recipe:
 This would most likely be the hardest part of updating the recipe since the others just requires one to either take away an ingredient, remove a recipe or just remove a step.
@@ -311,14 +445,25 @@ So if I'd like to reply to someone I would first need to get their comment id an
 }
 ```  
 ## Let users save a recipe to their account
-
-## Manipulate the Recipe:
-This is the easiest part of the Database just update whatever and call it a day.
+Nothing weird at all. I wanted the save the the recipe to a specific `user_name` but what would happen if a user changes their username? Well all the info would be lost so tying everything to an id the for the better. I know typing this out probably makes me look stupid but hey, everyone learns differently! I say that as I've then also changed the Comments table to use user_name instead of user_id, well not that is back as well.
 ```sql
+INSERT INTO Saved (user_id, recipe_id) 
+VALUES (1, 1);
 
+INSERT INTO Saved (user_id, recipe_id) 
+VALUES (2, 1);
+
+SELECT * FROM Saved
 ```
 
-When I delete a recipe I want the following instructions, recipe ingredients and comments to be deleted as well.
+## Extra update stuff:
+This is the easiest part of the Database just update whatever and call it a day. Users are able to change their name as long as it isn't taken, Recipe can change whatever as well same goes for instructions as I've already established. Delete entries from each table is also possible without any issues as well, I think it won't try it out since it's just a simple delete operation. Although what I want to try out is deleting a recipe and the following information gets deleted as well. And it's pretty easy one line of SQL code and everything is gone.
 ```sql
+DELETE FROM Recipe WHERE recipe_id = 1;
+```
 
+But some things are in order, one would need to add the following to the tables and database to ensure that everything is deleted one a reference key is gone.
+```sql
+PRAGMA foreign_keys = ON;
+ON DELETE CASCADE
 ```
