@@ -13,7 +13,7 @@ Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.o
             - [x] Instructions
                 - [x] Insert new instructions
                 - [x] Delete instructions
-                - [x] Swap instructions
+                - [ ] Swap instructions
             - [x] Different usernames with same title (Will work)
             - [x] One user with the same title (Won't work)
             - [ ] Score multiple recipes
