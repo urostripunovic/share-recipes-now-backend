@@ -244,7 +244,7 @@ DROP TABLE TempInstruction;
 
 Although this way of solving it fits more with what I want to do, learning how to do it in multiple ways as well as understanding key constraints better was a good learning opportunity and will help me get to where I want to be.
 ## Add a score to the recipe
-[I don't even need to code anything the backend or client (WARNING: LOUD)](https://www.youtube.com/watch?v=7ayDBOAH2HQ). 
+[I don't even need to code anything in the backend or frontend (WARNING: LOUD)](https://www.youtube.com/watch?v=7ayDBOAH2HQ). 
 ```sql
 INSERT INTO Score (recipe_id, score) VALUES (1,3);
 INSERT INTO Score (recipe_id, score) VALUES (1,2);
