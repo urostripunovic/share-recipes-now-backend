@@ -3,7 +3,7 @@ Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.o
 ## TODO
 - [x] [Formulate the database](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/Database.md)
 - [x] Design the [database](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20diagram.png)
-    - Look up what [index](https://www.sqlitetutorial.net/sqlite-index/) is and how it might improve the performance
+    - Look up what [index](https://www.sqlitetutorial.net/sqlite-index/) is and how it might improve the performance. ***Having UNIQUE, FOREIGN and Primary KEYS already help with indexing I don't need specific ones.***
 - [ ] Reevaluate the database
     - [x] Test out the database [on a browser](http://sqlfiddle.com/) or on vscode
         - [x] User
@@ -15,8 +15,8 @@ Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.o
         - [x] Comments: Comment, Chain, all Comments
         - [x] Recipe: multiple user save one
     - [ ] [Create a mock json for how something could look like](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md#the-json-files-would-look-like-the-following)
-        - User, Recipe, Search, Top Recipes, Less than 20 min Recipes
-- [ ] Update the [database image](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20diagram.png)
+        - ~~User, Recipe, Top Recipes, Less than 20 min Recipes~~, Search
+- [ ] ~~Update the [database image](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20diagram.png)~~ I honestly couldn't be bothered the file is in the repo, its updated.
 - [ ] Play around with Hono.js to understand it.
 - [ ] Create units test for the same db queries before implementing the backend.
     - [ ] Session test iaf.

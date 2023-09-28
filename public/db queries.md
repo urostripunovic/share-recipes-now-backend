@@ -53,7 +53,7 @@ VALUES (
 After implementing and testing the database I would also like the following tables to result in some nice `JSON` files
 
 ### A Users recipe with a specific title JSON
-Data representation for the recipe, the edit page for a user will not contain the comments
+Data representation for the recipe and the edit page for a user. I would need to reevaluate with how I'm getting the `recipe_id` if it's by url or some other way
 ```sql
 -- Users recipe along with all the good stuff.
 SELECT
@@ -138,9 +138,48 @@ The `JSON` file could look like the following:
 ```
 
 ### User JSON
-This file will display the information related to the user, such as their recipes, saved recipes as well as their comments
+This file will display the information related to the user, such as their recipes and saved recipes as well as their comments
 ```sql
+-- User info
 SELECT user_id, email, user_name, display_name, profile_image, bio, auth_method FROM Users;
+
+-- The users own recipes
+SELECT
+    U.user_id,
+    R.recipe_id,
+    R.title,
+    AVG(S.score) AS average_score
+FROM
+    User U
+JOIN
+    Recipe R ON U.user_id = R.user_id
+JOIN
+    Score S ON R.recipe_id = S.recipe_id
+WHERE U.user_id = 1;
+
+--Saved recipes the user has
+SELECT 
+    S.user_id,
+    S.recipe_id,
+    R.title
+FROM Saved S
+JOIN
+    Recipe R ON S.recipe_id = R.recipe_id
+WHERE S.user_id = 1;
+
+-- Comments posted by the user
+SELECT
+    C.comment_id,
+    R.title,
+    C.message,
+    C.timestamp
+FROM
+    Comments C
+JOIN
+    Recipe R ON C.recipe_id = R.recipe_id
+JOIN
+    User U ON C.user_id = u.user_id
+WHERE U.user_id = 1;
 ```
 With the following `JSON` file:
 ```JSON
@@ -151,7 +190,23 @@ With the following `JSON` file:
       "display_name",
       "profile_image",
       "bio",
-      "auth_method"
+      "auth_method",
+      "recipes": [
+        "recipe_id",
+        "title",
+        "score"
+      ],
+      "saved": [
+        "recipe_id",
+        "title",
+        "score"
+      ],
+      "comments": [
+        "comment_id",
+        "title",
+        "message",
+        "timestamp"
+      ]
 }
 ```
 
@@ -163,7 +218,9 @@ SELECT name FROM Ingredient WHERE name LIKE '%Tomato%';
 And the JSON would look like the following:
 ```JSON
 {
-    "ingredients": []
+    "ingredients": [
+        "name"
+    ]
 }
 ```
 ### Search page JSON
@@ -376,8 +433,8 @@ SELECT AVG(score) FROM Score WHERE recipe_id = 1;
 ## Add comments to a recipe as well as chain it
 When a person comments they comment with their username and not their id, since usernames are unique I would need to change this in the [database image](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20diagram.png) as well. There are no difficulties trying to add a comment.
 ```sql
-INSERT INTO Comments (recipe_id, user_name, message, parent_id, timestamp) 
-VALUES (1, 'username1', 'This tasted 😋', NULL, '2023-09-28 11:31');
+INSERT INTO Comments (recipe_id, user_id, message, parent_id, timestamp) 
+VALUES (1, 1, 'This tasted 😋', NULL, '2023-09-28 11:31');
 
 SELECT * FROM Comments WHERE recipe_id = 1;
 ```
