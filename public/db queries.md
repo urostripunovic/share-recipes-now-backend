@@ -140,9 +140,7 @@ The `JSON` file could look like the following:
 ### User JSON
 This file will display the information related to the user, such as their recipes, saved recipes as well as their comments
 ```sql
-SELECT 
-    user_id, email, user_name, display_name, profile_image, bio, auth_method 
-FROM Users;
+SELECT user_id, email, user_name, display_name, profile_image, bio, auth_method FROM Users;
 ```
 With the following `JSON` file:
 ```JSON
