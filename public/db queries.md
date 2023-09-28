@@ -313,5 +313,12 @@ So if I'd like to reply to someone I would first need to get their comment id an
 ## Let users save a recipe to their account
 
 ## Manipulate the Recipe:
+This is the easiest part of the Database just update whatever and call it a day.
+```sql
+
+```
 
 When I delete a recipe I want the following instructions, recipe ingredients and comments to be deleted as well.
+```sql
+
+```
