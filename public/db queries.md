@@ -204,14 +204,8 @@ FROM Recipe AS R
 INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
 INNER JOIN User AS U ON R.user_id = U.user_id
 GROUP BY 
-    U.user_id,
-    U.user_name,
-    R.recipe_id,
-    R.title,
-    R.difficulty,
-    R.time,
-    R.dish_image
-HAVING AVG(S.score) >= 4.2;
+    R.recipe_id
+HAVING average_score >= 4.2;
 ```
 The following JSON file contains:
 ```JSON
@@ -244,13 +238,7 @@ FROM Recipe AS R
 INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
 INNER JOIN User AS U ON R.user_id = U.user_id
 GROUP BY 
-    U.user_id,
-    U.user_name,
     R.recipe_id,
-    R.title,
-    R.difficulty,
-    R.time,
-    R.dish_image
 HAVING R.time < 30;
 ```
 The following JSON file is also exactly the same:
