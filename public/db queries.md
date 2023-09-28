@@ -154,7 +154,7 @@ With the following `JSON` file:
       "profile_image",
       "bio",
       "auth_method"
-    }
+}
 ```
 
 ### Search JSON
