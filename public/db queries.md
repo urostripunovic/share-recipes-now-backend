@@ -365,7 +365,7 @@ The `JSON` file could look like the following:
     ]
 }
 ```
-One thing to keep in mind though is that `"children": []` will be implemented in the backend, I wrote more about it [here](ttps://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md#add-comments-to-a-recipe-as-well-as-chain-it).
+One thing to keep in mind though is that `"children": []` will be implemented in the backend, I wrote more about it [here](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md#add-comments-to-a-recipe-as-well-as-chain-it).
 
 ### User JSON
 This file will display the information related to the user that are authorized to see their edit page i.e the **session**. This will display their recipes and saved recipes as well as the comments they've posted and if they want to create a new recipe the user_id from the session will be used.
