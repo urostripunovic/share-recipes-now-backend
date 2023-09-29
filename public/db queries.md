@@ -47,282 +47,6 @@ VALUES (
     'Combine pasta and tomato sauce.'
 );
 ```
-
-
-## The JSON files would look like the following:
-After implementing and testing the database I would also like the following tables to result in some nice `JSON` files
-
-### A Users recipe with a specific title JSON
-Data representation for the recipe- and the edit page for a user. To access the page the user would have to click on a thumbnail that has the corresponding data: `title, user_id, user_name` and `recipe_id` this will then fetch all the data needed for display, the same page can be edited only by authorized users. I would need to reevaluate with how I'm getting the `title, user_id, user_name` and `recipe_id` if it's by url or a href sending the needed data.
-```sql
--- A Recipe of a user.
-SELECT
-    U.user_id,
-    U.user_name,
-    R.recipe_id,
-    R.title,
-    R.description,
-    R.difficulty,
-    R.time,
-    R.dish_image,
-    AVG(S.score) AS average_score
-FROM
-    User U
-JOIN
-    Recipe R ON U.user_id = R.user_id
-JOIN
-    Score S ON R.recipe_id = S.recipe_id
-WHERE
-    U.user_id = 1 -- This comes from clicked thumbnail
-    AND R.title = 'Delicious Pasta'; -- This would from the title we want to update
-
--- Ingredients
-SELECT
-    I.name AS ingredient_name,
-    RI.amount
-FROM
-    User U
-JOIN
-    Recipe R ON R.user_id = U.user_id
-JOIN
-    RecipeIngredient RI ON R.recipe_id = RI.recipe_id
-JOIN
-    Ingredient I ON RI.ingredient_id = I.ingredient_id
-WHERE
-    U.user_id = 1; -- clicked thumbnail
-
--- Instructions
-SELECT
-    I.instruction_order,
-    I.instruction
-FROM
-    User U
-JOIN
-    Recipe R ON U.user_id = R.user_id
-JOIN
-    Instruction I ON R.recipe_id = I.recipe_id
-WHERE
-    U.user_id = 1; -- clicked thumbnail
-
--- Comments
-CREATE TEMP TABLE TempRecipeId AS -- Work in progress with how I'm fetching the comments of a user_id with a recipe title
-SELECT r.recipe_id
-FROM Recipe r
-JOIN User AS u ON r.user_id = u.user_id
-WHERE r.title = 'Delicious Pasta' AND (SELECT user_id FROM User WHERE user_name='username');
-
-SELECT
-    C.comment_id,
-    U.user_name,
-    C.message,
-    C.parent_id
-FROM
-    Comments C
-JOIN
-    Recipe R ON C.recipe_id = R.recipe_id
-JOIN
-    User U ON C.user_id = u.user_id
-WHERE
-    R.recipe_id = (SELECT recipe_id FROM TempRecipeId);
-
-DROP TABLE TempRecipeId;
-```
-The `JSON` file could look like the following:
-```JSON
-{
-    "user_id",
-    "user_name",
-    "recipes": [
-        "recipe_id",
-        "title",
-        "description",
-        "difficulty",
-        "score",
-        "ingredients": [],
-        "instructions": [],
-        "comments": [],
-    ]
-}
-```
-
-### User JSON
-This file will display the information related to the user that are authorized to see it i.e the **session**. This will display their recipes and saved recipes as well as the comments they've posted.
-```sql
--- User info
-SELECT user_id, email, user_name, display_name, profile_image, bio, auth_method FROM User WHERE user_id = 1;
-
--- The users own recipes
-SELECT
-    U.user_id,
-    R.recipe_id,
-    R.title,
-    AVG(S.score) AS average_score
-FROM
-    User U
-JOIN
-    Recipe R ON U.user_id = R.user_id
-JOIN
-    Score S ON R.recipe_id = S.recipe_id
-WHERE U.user_id = 1;
-
---Saved recipes the user has
-SELECT 
-    S.user_id,
-    S.recipe_id,
-    R.title
-FROM Saved S
-JOIN
-    Recipe R ON S.recipe_id = R.recipe_id
-WHERE S.user_id = 1;
-
--- Comments posted by the user
-SELECT
-    C.comment_id,
-    R.title,
-    R.recipe_id,
-    C.message,
-    C.timestamp
-FROM
-    Comments C
-JOIN
-    Recipe R ON C.recipe_id = R.recipe_id
-JOIN
-    User U ON C.user_id = u.user_id
-WHERE U.user_id = 1;
-```
-With the following `JSON` file:
-```JSON
-{
-      "user_id",
-      "email",
-      "user_name",
-      "display_name",
-      "profile_image",
-      "bio",
-      "auth_method",
-      "recipes": [
-        "recipe_id",
-        "title",
-        "score"
-      ],
-      "saved": [
-        "recipe_id",
-        "title",
-        "score"
-      ],
-      "comments": [
-        "comment_id",
-        "title",
-        "recipe_id"
-        "message",
-        "timestamp"
-      ]
-}
-```
-
-### Search JSON
-This file will return the ingredients in the database that were used to create a recipe. Clicking on the ingredient will take you to another page with all the recipes that used this ingredient. There is a key word in SQL called LIKE together with a couple of %
-```sql
-SELECT name FROM Ingredient WHERE name LIKE '%Tomato%';
-```
-And the JSON would look like the following:
-```JSON
-{
-    "ingredients": [
-        "name"
-    ]
-}
-```
-### Search page JSON
-When the ingredient has been clicked we would like to the get all the recipes that use this ingredient.
-```sql
-
-```
-And the JSON would look like the following:
-```JSON
-{
-    "recipes": [
-        {
-            "user_id",
-            "user_name",
-            "recipe_id",
-            "title",
-            "score",
-            "difficulty",
-            "time",
-            "image"
-        }
-    ]
-}
-```
-### Top Recipes JSON
-This file will return the top rated recipes for the site, a rating above 4.2 I think... Yeah that's good enough.
-```sql
-SELECT 
-    U.user_id,
-    U.user_name,
-    R.recipe_id, 
-    R.title, 
-    AVG(S.score) AS average_score,
-    R.difficulty,
-    R.time,
-    R.dish_image AS image
-FROM Recipe AS R
-INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
-INNER JOIN User AS U ON R.user_id = U.user_id
-GROUP BY 
-    R.recipe_id
-HAVING average_score >= 4.2;
-```
-The following JSON file contains:
-```JSON
-{
-    "recipes": [
-        "user_id",
-        "user_name",
-        "recipe_id",
-        "title",
-        "score",
-        "difficulty",
-        "time",
-        "image",
-    ]
-}
-```
-### Less Than 30 min Recipes JSON
-This file will return recipes that take less than 30 min to cook. The funny thing is that the SQL code is exactly the same so there will be only one part in the backend where I change the code as to avoid duplicate code, it's duplicate now just to display that it is, mostly for my own purposes.
-```sql
-SELECT 
-    U.user_id,
-    U.user_name,
-    R.recipe_id, 
-    R.title, 
-    AVG(S.score) AS average_score,
-    R.difficulty,
-    R.time,
-    R.dish_image AS image
-FROM Recipe AS R
-INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
-INNER JOIN User AS U ON R.user_id = U.user_id
-GROUP BY 
-    R.recipe_id,
-HAVING R.time < 30;
-```
-The following JSON file is also exactly the same:
-```JSON
-{
-    "recipes": [
-        "user_id",
-        "user_name",
-        "recipe_id",
-        "title",
-        "score",
-        "difficulty",
-        "time",
-        "image",
-    ]
-}
-```
 ## Manipulate the Instructions of a recipe:
 This would most likely be the hardest part of updating the recipe since the others just requires one to either take away an ingredient, remove a recipe or just remove a step.
 
@@ -489,13 +213,15 @@ So if I'd like to reply to someone I would first need to get their comment id an
 ```JSON
 {
     "comments": [
-        "comment_id",
-        "recipe_id",
-        "user_name",
-        "message",
-        "parent_id",
-        "timestamp",
-        "children": []
+        {
+            "comment_id",
+            "recipe_id",
+            "user_name",
+            "message",
+            "parent_id",
+            "timestamp",
+            "children": []
+        }
     ]
 }
 ```  
@@ -522,3 +248,358 @@ But some things are in order, one would need to add the following to the tables 
 PRAGMA foreign_keys = ON; -- idk why this is here other than stackoverflow telling me that it needs to be here
 ON DELETE CASCADE -- for each foreign key reference
 ```
+## The JSON files would look like the following:
+After implementing and testing the database I would also like the following tables to result in some nice `JSON` files
+### A Users recipe
+Data representation for the recipe- and the edit page for a user. To access the page the user would have to click on a thumbnail that has the corresponding data: `title, user_id, user_name` and `recipe_id` this will then fetch all the data needed for display, the same page can be edited only by authorized users if their user_id matches from the session token. If a user wants to create recipe that recipe will be added to the DB as usual.
+
+```sql
+-- A Recipe of a user.
+SELECT
+    U.user_id,
+    U.user_name,
+    R.recipe_id,
+    R.title,
+    R.description,
+    R.difficulty,
+    R.time,
+    R.dish_image,
+    AVG(S.score) AS average_score
+FROM
+    User U
+JOIN
+    Recipe R ON U.user_id = R.user_id
+LEFT JOIN
+    Score S ON R.recipe_id = S.recipe_id
+WHERE
+    U.user_id = 1 -- This comes from clicked thumbnail
+    AND R.title = 'Delicious Pasta'; -- This would from the title we want to update
+
+-- Ingredients
+SELECT
+    I.name AS ingredient_name,
+    RI.amount
+FROM
+    User U
+JOIN
+    Recipe R ON R.user_id = U.user_id
+JOIN
+    RecipeIngredient RI ON R.recipe_id = RI.recipe_id
+JOIN
+    Ingredient I ON RI.ingredient_id = I.ingredient_id
+WHERE
+    U.user_id = 1; -- clicked thumbnail
+
+-- Instructions
+SELECT
+    I.instruction_order,
+    I.instruction
+FROM
+    User U
+JOIN
+    Recipe R ON U.user_id = R.user_id
+JOIN
+    Instruction I ON R.recipe_id = I.recipe_id
+WHERE
+    U.user_id = 1; -- clicked thumbnail
+
+-- Comments
+CREATE TEMP TABLE TempRecipeId AS -- Work in progress with how I'm fetching the comments of a user_id with a recipe title
+SELECT r.recipe_id
+FROM Recipe r
+JOIN User AS u ON r.user_id = u.user_id
+WHERE r.title = 'Delicious Pasta' AND (SELECT user_id FROM User WHERE user_name='username'); -- user_name is changeable
+
+SELECT
+    C.comment_id,
+    U.user_name,
+    C.message,
+    C.parent_id,
+    C.timestamp
+FROM
+    Comments C
+JOIN
+    Recipe R ON C.recipe_id = R.recipe_id
+JOIN
+    User U ON C.user_id = u.user_id
+WHERE
+    R.recipe_id = (SELECT recipe_id FROM TempRecipeId);
+
+DROP TABLE TempRecipeId;
+```
+The `JSON` file could look like the following:
+```JSON
+{
+    "recipes": [
+        {
+            "user_id",
+            "user_name",
+            "recipe_id",
+            "title",
+            "description",
+            "difficulty",
+            "score",
+            "ingredients": [
+                {
+                    "ingredient_name",
+                    "amount"
+                }
+            ],
+            "instructions": [
+                {
+                    "instruction_order",
+                    "instruction"
+                }
+            ],
+            "comments": [
+                {
+                    "comment_id",
+                    "user_name",
+                    "message",
+                    "parent_id",
+                    "timestamp",
+                    "children": []
+                }
+            ]
+        }
+    ]
+}
+```
+One thing to keep in mind though is that `"children": []` will be implemented in the backend, I wrote more about it [here](ttps://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md#add-comments-to-a-recipe-as-well-as-chain-it).
+
+### User JSON
+This file will display the information related to the user that are authorized to see their edit page i.e the **session**. This will display their recipes and saved recipes as well as the comments they've posted and if they want to create a new recipe the user_id from the session will be used.
+```sql
+-- User info
+SELECT user_id, email, user_name, display_name, profile_image, bio, auth_method FROM User WHERE user_id = 1;
+
+-- The users own recipes
+SELECT
+    U.user_id,
+    R.recipe_id,
+    R.title,
+    AVG(S.score) AS score
+FROM
+    User U
+JOIN
+    Recipe R ON U.user_id = R.user_id
+LEFT JOIN
+    Score S ON R.recipe_id = S.recipe_id
+WHERE U.user_id = 1;
+
+--Saved recipes the user has
+SELECT 
+    S.user_id,
+    S.recipe_id,
+    R.title
+FROM Saved S
+LEFT JOIN
+    Recipe R ON S.recipe_id = R.recipe_id
+WHERE S.user_id = 1;
+
+-- Comments posted by the user
+SELECT
+    C.comment_id,
+    R.title,
+    R.recipe_id,
+    C.message,
+    C.timestamp
+FROM
+    Comments C
+JOIN
+    Recipe R ON C.recipe_id = R.recipe_id
+JOIN
+    User U ON C.user_id = u.user_id
+WHERE U.user_id = 1;
+```
+With the following `JSON` file:
+```JSON
+{
+    "user_id",
+    "email",
+    "user_name",
+    "display_name",
+    "profile_image",
+    "bio",
+    "auth_method",
+    "recipes": [
+        {
+            "user_id",
+            "recipe_id",
+            "title",
+            "score"
+        }
+    ],
+    "saved": [
+        {
+            "user_id",
+            "recipe_id",
+            "title",
+            "score"
+        }
+    ],
+    "comments": [
+        {
+            "comment_id",
+            "title",
+            "recipe_id"
+            "message",
+            "timestamp"
+        }
+    ]
+}
+```
+
+### Search JSON
+This file will return the ingredients in the database that were used to create a recipe. Clicking on the ingredient will take you to another page with all the recipes that used this ingredient. There is a key word in SQL called `LIKE` together with `%%`
+```sql
+SELECT name FROM Ingredient WHERE name LIKE '%Tomato%';
+```
+And the JSON would look like the following:
+```JSON
+{
+    "ingredients": [
+        "name"
+    ]
+}
+```
+If by change there are no matches ingredients then there are no recipes with that ingredient but if you instead want to search for a recipe you could do that as well using the following sql. But I'm not really sure if I want to implement this but it would be easy to do because the database is built up in a good way that enables this, I would then get multiple recipes of the same name but solving the duplication of things is the least of my worries. Nonetheless the feature can be implemented without any issues. 
+```sql
+SELECT U.user_id, U.user_name, R.recipe_id, R.title, R.dish_image, R.time 
+FROM Recipe R
+JOIN User U ON R.user_id = U.user_id
+WHERE title LIKE '%pasta%';
+```
+And the JSON would look like the following:
+```JSON
+{
+    "recipe": [
+        {
+            "user_id",
+            "user_name"
+            "recipe_id",
+            "title",
+            "dish_image",
+            "time",
+        },
+    ]
+}
+```
+
+### Search page JSON
+When the ingredient has been clicked we would like to the get all the recipes that use this ingredient.
+```sql
+SELECT
+  U.user_id,
+  U.user_name,
+  R.recipe_id,
+  R.title,
+  R.difficulty,
+  R.time,
+  R.dish_image,
+  AVG(S.score) AS score
+FROM
+  Recipe AS R
+JOIN
+  RecipeIngredient AS RI ON R.recipe_id = RI.recipe_id
+JOIN
+  User AS U ON R.user_id = U.user_id
+JOIN
+  Ingredient AS I ON I.ingredient_id = RI.ingredient_id
+LEFT JOIN
+  Score AS S ON R.recipe_id = S.recipe_id
+WHERE
+  I.ingredient_id = 2
+GROUP BY
+  R.recipe_id;
+```
+And the JSON would look like the following:
+```JSON
+{
+    "recipes": [
+        {
+            "user_id",
+            "user_name",
+            "recipe_id",
+            "title",
+            "score",
+            "difficulty",
+            "time",
+            "dish_image"
+        }
+    ]
+}
+```
+### Top Recipes JSON
+This file will return the top rated recipes for the site, a rating above 4.2 I think... Yeah that's good enough.
+```sql
+SELECT 
+    U.user_id,
+    U.user_name,
+    R.recipe_id, 
+    R.title, 
+    AVG(S.score) AS score,
+    R.difficulty,
+    R.time,
+    R.dish_image
+FROM Recipe AS R
+INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
+INNER JOIN User AS U ON R.user_id = U.user_id
+GROUP BY 
+    R.recipe_id
+HAVING average_score >= 4.2;
+```
+The following JSON file contains:
+```JSON
+{
+    "recipes": [
+        {
+            "user_id",
+            "user_name",
+            "recipe_id",
+            "title",
+            "score",
+            "difficulty",
+            "time",
+            "dish_image"
+        }
+    ]
+}
+```
+### Less Than 30 min Recipes JSON
+This file will return recipes that take less than 30 min to cook. The funny thing is that the SQL code is exactly the same so there will be only one part in the backend where I change the code as to avoid duplicate code, it's duplicate now just to display that it is, mostly for my own purposes.
+```sql
+SELECT 
+    U.user_id,
+    U.user_name,
+    R.recipe_id, 
+    R.title, 
+    AVG(S.score) AS score,
+    R.difficulty,
+    R.time,
+    R.dish_image
+FROM Recipe AS R
+INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
+INNER JOIN User AS U ON R.user_id = U.user_id
+GROUP BY 
+    R.recipe_id,
+HAVING R.time < 30;
+```
+The following JSON file is also exactly the same:
+```JSON
+{
+    "recipes": [
+        {
+            "user_id",
+            "user_name",
+            "recipe_id",
+            "title",
+            "score",
+            "difficulty",
+            "time",
+            "dish_image"
+        }
+    ]
+}
+```
+So yeah... Ff you've made it to the end of the page then [nice](https://www.youtube.com/watch?v=3WAOxKOmR90), Hopefully my grammar isn't that broken but what's important is if you understood my code. I haven't touched SQL in years so if you have any ideas on how I could improve it don't hesitate to create a pull request. To goal of this project is to learn!
