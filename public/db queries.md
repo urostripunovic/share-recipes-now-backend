@@ -602,4 +602,4 @@ The following JSON file is also exactly the same:
     ]
 }
 ```
-So yeah... Ff you've made it to the end of the page then [nice](https://www.youtube.com/watch?v=3WAOxKOmR90), Hopefully my grammar isn't that broken but what's important is if you understood my code. I haven't touched SQL in years so if you have any ideas on how I could improve it don't hesitate to create a pull request. To goal of this project is to learn!
+So yeah... If you've made it to the end of the page then [nice](https://www.youtube.com/watch?v=3WAOxKOmR90), Hopefully my grammar isn't that broken but what's important is if you understood my code. I haven't touched SQL in years so if you have any ideas on how I could improve it don't hesitate to create a pull request. To goal of this project is to learn!
