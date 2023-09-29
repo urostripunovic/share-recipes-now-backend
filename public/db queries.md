@@ -53,9 +53,9 @@ VALUES (
 After implementing and testing the database I would also like the following tables to result in some nice `JSON` files
 
 ### A Users recipe with a specific title JSON
-Data representation for the recipe and the edit page for a user. I would need to reevaluate with how I'm getting the `recipe_id` if it's by url or some other way
+Data representation for the recipe- and the edit page for a user. To access the page the user would have to click on a thumbnail that has the corresponding data: `title, user_id, user_name` and `recipe_id` this will then fetch all the data needed for display, the same page can be edited only by authorized users. I would need to reevaluate with how I'm getting the `title, user_id, user_name` and `recipe_id` if it's by url or a href sending the needed data.
 ```sql
--- Users recipe along with all the good stuff.
+-- A Recipe of a user.
 SELECT
     U.user_id,
     U.user_name,
@@ -73,8 +73,8 @@ JOIN
 JOIN
     Score S ON R.recipe_id = S.recipe_id
 WHERE
-    U.user_name = 'username'
-    AND R.title = 'Delicious Pasta';
+    U.user_id = 1 -- This comes from clicked thumbnail
+    AND R.title = 'Delicious Pasta'; -- This would from the title we want to update
 
 -- Ingredients
 SELECT
@@ -89,7 +89,7 @@ JOIN
 JOIN
     Ingredient I ON RI.ingredient_id = I.ingredient_id
 WHERE
-    U.user_name = 'username';
+    U.user_id = 1; -- clicked thumbnail
 
 -- Instructions
 SELECT
@@ -102,9 +102,15 @@ JOIN
 JOIN
     Instruction I ON R.recipe_id = I.recipe_id
 WHERE
-    U.user_name = 'username';
+    U.user_id = 1; -- clicked thumbnail
 
 -- Comments
+CREATE TEMP TABLE TempRecipeId AS -- Work in progress with how I'm fetching the comments of a user_id with a recipe title
+SELECT r.recipe_id
+FROM Recipe r
+JOIN User AS u ON r.user_id = u.user_id
+WHERE r.title = 'Delicious Pasta' AND (SELECT user_id FROM User WHERE user_name='username');
+
 SELECT
     C.comment_id,
     U.user_name,
@@ -117,7 +123,9 @@ JOIN
 JOIN
     User U ON C.user_id = u.user_id
 WHERE
-    R.recipe_id = 1; -- Comes from the recipe_id of the title from the user_name
+    R.recipe_id = (SELECT recipe_id FROM TempRecipeId);
+
+DROP TABLE TempRecipeId;
 ```
 The `JSON` file could look like the following:
 ```JSON
@@ -138,10 +146,10 @@ The `JSON` file could look like the following:
 ```
 
 ### User JSON
-This file will display the information related to the user, such as their recipes and saved recipes as well as their comments
+This file will display the information related to the user that are authorized to see it i.e the **session**. This will display their recipes and saved recipes as well as the comments they've posted.
 ```sql
 -- User info
-SELECT user_id, email, user_name, display_name, profile_image, bio, auth_method FROM Users;
+SELECT user_id, email, user_name, display_name, profile_image, bio, auth_method FROM User WHERE user_id = 1;
 
 -- The users own recipes
 SELECT
@@ -171,6 +179,7 @@ WHERE S.user_id = 1;
 SELECT
     C.comment_id,
     R.title,
+    R.recipe_id,
     C.message,
     C.timestamp
 FROM
@@ -204,6 +213,7 @@ With the following `JSON` file:
       "comments": [
         "comment_id",
         "title",
+        "recipe_id"
         "message",
         "timestamp"
       ]
@@ -232,14 +242,16 @@ And the JSON would look like the following:
 ```JSON
 {
     "recipes": [
-        "user_id",
-        "user_name",
-        "recipe_id",
-        "title",
-        "score",
-        "difficulty",
-        "time",
-        "image",
+        {
+            "user_id",
+            "user_name",
+            "recipe_id",
+            "title",
+            "score",
+            "difficulty",
+            "time",
+            "image"
+        }
     ]
 }
 ```
@@ -278,7 +290,7 @@ The following JSON file contains:
 }
 ```
 ### Less Than 30 min Recipes JSON
-This file will return recipes that take less than 30 min to cook. The funny thing is that the SQL code is exactly the same so there will be only one part in the backend where I change the code.
+This file will return recipes that take less than 30 min to cook. The funny thing is that the SQL code is exactly the same so there will be only one part in the backend where I change the code as to avoid duplicate code, it's duplicate now just to display that it is, mostly for my own purposes.
 ```sql
 SELECT 
     U.user_id,
@@ -507,6 +519,6 @@ DELETE FROM Recipe WHERE recipe_id = 1;
 
 But some things are in order, one would need to add the following to the tables and database to ensure that everything is deleted one a reference key is gone.
 ```sql
-PRAGMA foreign_keys = ON;
-ON DELETE CASCADE
+PRAGMA foreign_keys = ON; -- idk why this is here other than stackoverflow telling me that it needs to be here
+ON DELETE CASCADE -- for each foreign key reference
 ```

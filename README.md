@@ -19,4 +19,4 @@ Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.o
 - [ ] ~~Update the [database image](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20diagram.png)~~ I honestly couldn't be bothered the file is in the repo, its updated.
 - [ ] Play around with Hono.js to understand it.
 - [ ] Create units test for the same db queries before implementing the backend.
-    - [ ] Session test iaf.
+    - [ ] Session test pronto.
