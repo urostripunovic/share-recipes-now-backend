@@ -20,10 +20,10 @@ A simple insertion of the recipes, ingredients, specific ingredient amounts for 
 INSERT INTO Recipe (user_id, title, description, difficulty, dish_image)
 VALUES (1, 'Delicious Pasta', 'A recipe for pasta', 3, NULL);
 
-INSERT INTO Ingredient (name) VALUES ('Pasta');
+INSERT INTO Ingredient (name) VALUES ('Pasta'); --insert into the db if it exist just ignore the insert
 INSERT INTO Ingredient (name) VALUES ('Tomato Sauce');
 
-INSERT INTO RecipeIngredient (recipe_id, ingredient_id, amount)
+INSERT INTO RecipeIngredient (recipe_id, ingredient_id, amount) -- Specific recipe ingredient amount 
 VALUES (1, 1, '200g'), (1, 2, '1 cup');
 
 INSERT INTO Instruction (recipe_id, instruction_order, instruction)
