@@ -5,7 +5,7 @@ This document explains what tables will exist, explaining what each table will d
 This table handles user registration, authentication, and user profiles. It covers the basic user-related functions. Indexing is not needed for this table as **Users** are not the star of this show.
 
 #### Session
-This table handles **User** session.
+This table handles **User** session. I might not use this one since there are alternatives like [JWT](https://jwt.io/) but I would need to look more into it.
 
 #### Recipes
 This table manages the creation, updating, and deletion of recipes and stores details about each recipe, including title, description (Instructions), difficulty level, time, and images. The **User** can create multiple recipes and multiple **Users** can comment on a recipe as well. Multiple **Users** can also save the same recipe, **Users** can also score a recipe but tracking them isn't needed. *Index could be used here when using a search bar*.  
