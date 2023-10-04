@@ -3,11 +3,11 @@ Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.o
 ## TODO
 - [ ] Look into how update would work together with backend (UPDATE).
 - [ ] Start setting up CRUD operation as well as unit tests.
-    - - JWT helpers
 - [ ] Look into SQLite and how to implement in with Hono.
     - Apparently there are npm packages of how to use SQLite: [sqLite,(and/or?) sqlite3](https://www.npmjs.com/package/sqlite) and [better-sqlite3](https://www.npmjs.com/package/better-sqlite3). I would need to read up on how to use it.
 - [x] Play around with Hono.js to understand it.
     - Simple get, post, put, patch and delete.
+    - JWT with either cookies or local storage.
 - [x] Reevaluate the JSON files and sql queries. 
 - [x] Update the [database image](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20diagram.png) ~~I honestly couldn't be bothered.~~ I could be bothered
 - [x] [Create a mock json for how something could look like](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md#the-json-files-would-look-like-the-following)

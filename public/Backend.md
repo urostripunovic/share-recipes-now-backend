@@ -48,8 +48,45 @@ fetch("some url", {
   },
 });
 
+//The server code
+app.use(
+    "/api/*",
+    jwt({
+        secret: process.env.SECRET,
+    })
+);
+
+app.get("/api/page", (c) => {
+    const payload = c.get("jwtPayload");
+    return c.json(payload); // eg: { "sub": "1234567890", "name": "John Doe", "iat": 1516239022 }
+});
+
 ```
-I got this example to work with Insomnia but not the other two, Some more testing is in order.
+I got this example to work with Insomnia but not the other two, Some more testing is in order. The reason for the two not working is that I would need to add a [cookie-parser](https://www.npmjs.com/package/cookie-parser) middleware to the server (Express.js) and then have some authorization logic to validate the token. And I'm kind of in a pinch, from a [article](https://coolgk.medium.com/localstorage-vs-cookie-for-jwt-access-token-war-in-short-943fb23239ca) I read local storage is a solution for phone users as well while cookies only work for the browser but are more secure and less prone to XSS attacks. And then there is another [article](https://www.socialmediatoday.com/content/cookies-mobile-do-they-exist) that says that cookies are possible if they use the A browser meaning that a cookie isn't cross dimensional for phone users. But working with cookies then allows for CSRF attacks but I know that Svelte has implement counter measures against this thankfully and the app I'm creating doesn't really have XSS entry points since svelte sanitizes the inputs as well unless I'm using the `@html`-tag. So then the question remains... what would I need to add to Hono so that I can use cookies on the server instead? Hono has their own support for jwt and cookies so I might not need to download anymore packages.
+
+```JS
+app.post("/test", async (c) => {
+    const token = await sign({ user_name: "para knas" }, process.env.SECRET);
+
+    setCookie(c, "token", token, {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000, //24 h
+    });
+
+    return c.json({ msg: "user logged in", token }, 200);
+});
+
+app.get("/test", async (c) => {
+    const token = getCookie(c, "token");
+
+    if (!token) return c.json({ msg: "unauthorized" }, 401);
+
+    const { user_name } = await verify(token, process.env.SECRET);
+
+    return c.json({ user_name }, 200);
+});
+```
+If I were to change the name of our token to `token1` when getting it then the server will spit out a unauthorized message. So there was no need to add any middleware since Hono has it implemented already. I only need to add better authorization logic and if I want to add that logic to a whole route I would need to create my own middleware and also lookout as to not try and use `withCredentials` and `credentials` on wildcard routes. Hono also has their own [Custom Error Types](https://hono.dev/helpers/jwt#payload-validation) that display if anything is wrong.
 
 To close of this Hono+auth+cookie venture the JWT didn't work with a [strong secret key](https://www.digitalocean.com/community/tutorials/nodejs-jwt-expressjs) it only worked when my secret was `test` which is really weird since that was the first one I used. And I got it working by literary turning the server on and off... In summary, Hono works well, env variables work, the REST operations work, auth works as well as when trying it out in Insomnia. With the basics done I can now more towards to implementing the SQLite database.
 
