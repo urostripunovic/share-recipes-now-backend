@@ -1,7 +1,7 @@
 # Hono framework + Node.js runtime
 This document is here to write out my thoughts and prayers like with the db queries document. I'll share some of my problems as well as how I solved them. I'll also write up a API document but that will have to wait.
 
-## Basics of Hono
+## Basics of Hono and authorization
 Well it works which is nice, but this is the first time i'm learning how to actually try out my APIs other than a simple get. I used [Insomnia](https://insomnia.rest/) to try out the API end points of get, post, put and delete. One could also use [Postman](https://www.postman.com/) but I'm sticking with Insomnia for now. All HTTP methods work as intended.
 
 Hono some other cool features like authentication from the server instead of of the frontend which lessens the amount of code in the browser. I tried out Basic Auth which seems to be good when working with an admin page but as a user getting a pop up isn't that appealing maybe I could authorize it in some other way for a user to access their own page and edit page. And there is it's called [Bearer Auth](https://swagger.io/docs/specification/authentication/bearer-authentication/) where the user has a token and with that token a user is able to access certain resources but the question is then how do I create this token and how do I send one for each user that has a session? Well when it comes to creating the token it's just a **plain string** meaning anyone can crack it so this token needs to be sent over a secure site and is generated on the server so the string could be a [JWT token](https://hono.dev/middleware/builtin/jwt) and I would need to send it to a user with the [cookie header](https://blog.logrocket.com/jwt-authentication-best-practices/), where the token is then used as authorization to fetch resources from the users payload data. I will be using a JWT token instead of a row in the database because it's faster and hopefully more secure than me implementing security measures since I can only think of so much. The JWT payload data would look something likes this:
@@ -15,7 +15,44 @@ Hono some other cool features like authentication from the server instead of of 
 ```
 From researching about Hono I found out that they are all about bundle size. So I would need to import [JWT helpers](https://hono.dev/helpers/jwt) and [Cookie helpers](https://hono.dev/helpers/cookie) for authentication. And after reading these articles briefly, I would need to set the cookie when a user logs in, authenticate that cookie to ensure that only logged in users can perform certain actions as well as only the indented users can edit their recipe as well as view their profile. So I'm just spitballing some ideas here, if the cookie payload's `user_id`/`user_name` or both together fit with the url params then a user can edit the page. If a user wants to comment or save a recipe they would need to be logged in i.e have a cookie. If a user wants to rate a recipe they can do so but it will only register if they have a cookie. 
 
-So I'm trying to get JWT to work with a [strong secret key](https://www.digitalocean.com/community/tutorials/nodejs-jwt-expressjs) but nothing works unless my secret it called `test` which is really weird. And I got it working but I still wouldn't be able to tell you why it does. I honestly turned the server on and off and then it worked lol. As is well I have a strong secret that will be used for the JWT token creations. So with the basics done I can now more towards to implementing the SQLite database.
+### Working with cookies
+To be honest I don't know how to auth with a cookie so a little research is in order. The way I understood it is when I make a login request and if I succeed a cookie will be sent back from the server this cookie is then put in my cookie jar at the document level so when I perform request from here on out it would be validated or not, and example of this is mentioned in this [stackoverflow link talking about axios](https://stackoverflow.com/questions/43002444/make-axios-send-cookies-in-its-requests-automatically) and I need to make sure that my middleware of `cors()` isn't set to wildcard, but is a comment from 2017 if things go wrong I would know why. If you don't want to bloat the code base with more code there is a lightweight version of axios called [redaxios](https://www.npmjs.com/package/redaxios). What If I don't want use axios, would I need to implement my own logic for how I retrieve the cookie? Here are some moore code examples, [the first one being axios and the second one plain old fetch](https://stackoverflow.com/questions/66892622/get-cookie-on-front-end):
+```JS
+    try {
+        await axios.get("some url", {
+            withCredentials: true,
+        });
+    } catch (error) {
+        console.log(error);
+    }
+```
+```JS
+fetch("some url", {
+  method: "GET", 
+  headers: {
+    'Content-Type': 'application/json' 
+  },
+  credentials: 'include'
+});
+```
+Apparently one could implement their logic of retrieving cookies but that is if one would want fine crumb control over it. And the example could look like the following:
+```JS
+localStorage.setItem('token', token); //get the token from the fetch or axios.
+localStorage.removeItem('token'); //the token could also be removed during a sign out for instance.
+
+fetch("some url", {
+  method: "GET", 
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  },
+});
+
+```
+I got this example to work with Insomnia but not the other two, Some more testing is in order.
+
+To close of this Hono+auth+cookie venture the JWT didn't work with a [strong secret key](https://www.digitalocean.com/community/tutorials/nodejs-jwt-expressjs) it only worked when my secret was `test` which is really weird since that was the first one I used. And I got it working by literary turning the server on and off... In summary, Hono works well, env variables work, the REST operations work, auth works as well as when trying it out in Insomnia. With the basics done I can now more towards to implementing the SQLite database.
+
 ## Working with SQLite and Node.js
 
 

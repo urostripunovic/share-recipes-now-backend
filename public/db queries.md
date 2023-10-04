@@ -165,6 +165,15 @@ INSERT INTO Score (recipe_id, score) VALUES (2,4);
 
 SELECT AVG(score) FROM Score WHERE recipe_id = 1;
 ```
+There was a couple of use cases I didn't think for, for instance if a score isn't tied to a user then a user can review bomb a recipe which isn't desirable so I tied the `user_id` to a specific `recipe_id` a `UNIQUE` key. Now only authenticated users can rate as well as if the user's score is not null then I would just need to update the table instead oh and i also inserted the round function as to avoid long `REAL` values. Here is the SQL code:
+```sql
+INSERT INTO Score (user_id,recipe_id, score) VALUES (1,1,3);
+INSERT INTO Score (user_id,recipe_id, score) VALUES (2,1,2);
+INSERT INTO Score (user_id,recipe_id, score) VALUES (1,2,4.2);
+SELECT ROUND(AVG(score), 2) FROM Score WHERE recipe_id = 1;
+UPDATE Score SET score = 1 WHERE user_id = 1 AND recipe_id = 1;
+SELECT ROUND(AVG(score), 2) FROM Score WHERE recipe_id = 1;
+```
 ## Add comments to a recipe as well as chain it
 There are no difficulties trying to add a comment but creating a comment chain/thread will maybe.
 ```sql

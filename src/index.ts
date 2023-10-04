@@ -16,26 +16,28 @@ const app = new Hono();
 
 dotenv.config();
 
-app.use('/',cors());
+app.use(cors());
 
 app.use(
-    "/auth/*",
+    "/api/*",
     jwt({
         secret: process.env.SECRET,
     })
 );
 
-app.get("/auth/page", (c) => {
+app.get("/api/page", (c) => {
     const payload = c.get("jwtPayload");
     return c.json(payload); // eg: { "sub": "1234567890", "name": "John Doe", "iat": 1516239022 }
 });
 
-const port = parseInt(process.env.PORT!) || 3000;
-console.log(`Running at http://localhost:${port}`);
 
+
+
+const port = parseInt(process.env.PORT!) || 3000;
 serve({
     fetch: app.fetch,
     port: port,
 });
+console.log(`Running at http://localhost:${port}`);
 
 export default app;
