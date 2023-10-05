@@ -6,7 +6,14 @@ import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { jwt, sign, verify } from "hono/jwt";
 import { cors } from "hono/cors";
 
-const app = new Hono();
+type Variables = {
+    user: {
+        user_id: number;
+        user_name: string;
+    };
+};
+
+const app = new Hono<{ Variables: Variables }>();
 
 dotenv.config();
 
@@ -27,11 +34,16 @@ app.get("/api/page", (c) => {
 //app.use("/test/*", cookieAuth); //Whole route middleware
 
 app.post("/test", async (c) => {
-    const token = await sign({ user_name: "para knas" }, process.env.SECRET);
+    const exp = (new Date().getTime() + 1) / 1000; //increase the amount of seconds, x*60 minutes, x*60*60 hours, x*24*60*60 days
+    const iat = Math.floor(new Date().getTime() / 1000); //issued at time
 
+    const token = await sign(
+        { user_id: 1, user_name: "para knas", iat: iat, exp: exp },
+        process.env.SECRET
+    );
     setCookie(c, "token", token, {
         httpOnly: true,
-        maxAge: 1000,
+        secure: true,
     });
 
     return c.json({ msg: "user logged in", token }, 200);
@@ -39,9 +51,8 @@ app.post("/test", async (c) => {
 
 app.get("/test", cookieAuth, async (c) => {
     try {
-        //@ts-ignore
-        const { user_name } = await c.req.user;
-        return c.json({ user_name }, 200);
+        const { user_id, user_name } = c.get("user");
+        return c.json({ user_id, user_name }, 200);
     } catch (error) {
         return c.json({ error: "Internal Server Error" }, 500);
     }
@@ -58,15 +69,14 @@ export default app;
 
 async function cookieAuth(c, next) {
     const token = getCookie(c, "token");
-    if (!token) return c.json({ message: "No token provided" }, 401);
+    if (!token) return c.json({ message: "No token found" }, 404);
 
     try {
-        const { user_name } = await verify(token, process.env.SECRET);
-        c.req.user = { user_name: user_name };
+        const json = await verify(token, process.env.SECRET);
+        c.set("user", json);
         await next();
     } catch (error) {
         deleteCookie(c, "token");
-        const { name } = error;
-        return c.json({ error: name }, 403);
+        return c.json({ error: error.message }, 403);
     }
 }

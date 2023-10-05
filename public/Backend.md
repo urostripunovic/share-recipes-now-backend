@@ -70,7 +70,7 @@ app.post("/test", async (c) => {
 
     setCookie(c, "token", token, {
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, //24 h
+        secure: true,
     });
 
     return c.json({ msg: "user logged in", token }, 200);
@@ -91,35 +91,31 @@ If I were to change the name of our token to `token1` when getting it then the s
 ```js
 app.use("/test/*", async (c, next) => {
     const token = getCookie(c, "token");
-    if (!token) return c.json({ message: "No token provided" }, 401);
+    if (!token) return c.json({ message: "No token found" }, 404);
 
     try {
-        const { user_name } = await verify(token, process.env.SECRET);
-        c.req.user = { id: 1 ,user_name: user_name };
-        console.log("This is your middleware speaking", c.req.user);
+        const json = await verify(token, process.env.SECRET);
+        c.set('user', json)
         await next();
     } catch (error) {
         deleteCookie(c, "token");
-        const { name } = error;
-        return c.json({ error: name }, 403);
+        return c.json({ success: false, msg: error.message }, 403);
     }
 });
 ```
 This is the middleware it worked for everything in this route and since I'm using TypeScript it won't like `c.req.user` since it doesn't exist in Hono, maybe they have a better way of doing this I don't know but if they do I'll update my code accordingly. But this is the wildcard approach and as we established using `credentials` and `withCredentials` can pose some issues and I need to make sure that the route that gives out a cookie isn't under that authed route. I also wrote the middleware as a function as well if I wanted to add them to only specified CRUD routes:
 ```js
-async function authMiddle(c, next) {
+async function cookieAuth(c, next) {
     const token = getCookie(c, "token");
-    if (!token) return c.json({ message: "No token provided" }, 401);
+    if (!token) return c.json({ message: "No token found" }, 404);
 
     try {
-        const { user_name } = await verify(token, process.env.SECRET);
-        c.req.user = { id: 1, user_name: user_name };
-        console.log("This is your middleware speaking", c.req.user);
+        const json = await verify(token, process.env.SECRET);
+        c.set('user', json)
         await next();
     } catch (error) {
         deleteCookie(c, "token");
-        const { name } = error;
-        return c.json({ error: name }, 403);
+        return c.json({ success: false, msg: error.message }, 403);
     }
 }
 ```
@@ -135,9 +131,21 @@ app.get("/test", cookieAuth, async (c) => {
     }
 });
 ```
-I could also add a proper try catch block to handle if `c.req.user` doesn't exists but I'll do that when I actually implement the code.
+I could also add a proper try catch block to handle if `c.req.user` doesn't exists but the documentation has [getters and setters](https://hono.dev/api/context#set-get) that can be passed from the middleware. I read about them when researching but applied Express.js knowledge so I just ignored them, I guess that's inexperience for ya.
 
-So, to close of this Hono+auth+cookie venture the JWT didn't work at first with a [strong secret key](https://www.digitalocean.com/community/tutorials/nodejs-jwt-expressjs) it only worked when my secret was `test` which is really weird since that was the first one I used. And I got it working by literary turning the server on and off... In summary, Hono works well, env variables work, the REST operations work, auth works as well as when trying it out in Insomnia, implementing my own middleware was new I followed the principles of Express.js and it turned out well. With the basics done, I can now move on towards to implementing the SQLite database.
+I decided to look into access tokens and refresh tokens. Before I can try refresh tokens I first need to setup SQLite. If one wants to work with refresh tokens they also need a access token, this access token can not be accessed via JavaScript so it's `httpOnly` (like we did earlier) and the refresh token is stored in a database. The access token has a short ttl while the refresh one has a longer ttl. ***So for every API end point call the access token is checked, if it's valid proceed, if not check if the refresh token is valid and then provide a new access token, if the refresh token is not valid then require the user to login again and delete all tokens related to that user in the database to ensure better security. The access token is sent like the examples above. The refresh token is stored in a database.*** I feel like this wouldn't really be an issue to implement but the support for cookies from Hono isn't really that optimal, my token has an expiration date of 1 month. So what I'm going to do is code like i initial wanted, storing the "refresh" token (long ttl) as a cookie, I have the Session table set up and most of the code is also finished, all that is left is implementing the text highlighted in this section. But the major issue is the expire date on on jwt token, I can set a expire date on a cookie but that would require some logic to implement but the date I want to check is the jwt token not the cookie. What I could do is import the [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) npm package and use it's `expiresIn` method to add access and refresh token, but that seems like a really unnecessary band aid fix and it could also be that Hono isn't really the backend framework I need when looking at other frameworks like [ElysiaJS](https://elysiajs.com/plugins/jwt.html#jwt-sign) they have expiration support. And I was able to add an expiration date the logic wasn't that hard to do other than the fact that my numbers were a tiny bit to high for JWT, I thought JWT used milliseconds but they used seconds... the exp and iat times were years ahead which was kinda funny. But here is the code:
+```js
+const exp = (new Date().getTime() + 1) / 1000; //increase the amount of x seconds, x*60 minutes, x*60*60 hours, x*24*60*60 days
+const iat = Math.floor(new Date().getTime() / 1000); //issued at time
+
+const token = await sign(
+    { user_id: 1, user_name: "para knas", iat: iat, exp: exp },
+    process.env.SECRET
+);
+```
+There is not need to download the jsonwebtoken npm package but I'm not gonna lie the DX was a lot better with the package. The with this code I should be able to implement access and refresh tokens but with no database there's nothing to test. I'll either try and implement this once the db is up an running on once the project is done, but we all know from how I've done things so far, I'll most likely do it. [And my future employer would be impressed with the attention to detail](https://tenor.com/sv/view/wink-wink-nudge-nudge-monty-python-wink-signal-gif-5500109).
+
+So, to close of this Hono+auth+cookie venture I ran into an issue with the JWT not working at first with a [strong secret key](https://www.digitalocean.com/community/tutorials/nodejs-jwt-expressjs) it only worked when my secret was `test` which is really weird since that was the first one I used. And I got it working by literary turning the server on and off... In summary, Hono works well, env variables work, the REST operations work, auth works as well as when trying it out in Insomnia, implementing my own middleware was new I followed the principles of Express.js and it turned out well, and looking into the abyss that is security damn... I learnt a lot and I can say I'm better off for it as well. With the basics 'done' (haven't forgotten you access and refresh token), I can now move on towards to implementing the SQLite database.
 
 ## Working with SQLite and Node.js
 
