@@ -18,13 +18,13 @@ From researching about Hono I found out that they are all about bundle size. So 
 ### Working with cookies
 To be honest I don't know how to auth with a cookie so a little research is in order. The way I understood it is when I make a login request and if I succeed a cookie will be sent back from the server this cookie is then put in my cookie jar at the document level so when I perform request from here on out it would be validated or not, and example of this is mentioned in this [stackoverflow link talking about axios](https://stackoverflow.com/questions/43002444/make-axios-send-cookies-in-its-requests-automatically) and I need to make sure that my middleware of `cors()` isn't set to wildcard, but is a comment from 2017 if things go wrong I would know why. If you don't want to bloat the code base with more code there is a lightweight version of axios called [redaxios](https://www.npmjs.com/package/redaxios). What If I don't want use axios, would I need to implement my own logic for how I retrieve the cookie? Here are some moore code examples, [the first one being axios and the second one plain old fetch](https://stackoverflow.com/questions/66892622/get-cookie-on-front-end):
 ```JS
-    try {
-        await axios.get("some url", {
-            withCredentials: true,
-        });
-    } catch (error) {
-        console.log(error);
-    }
+try {
+    await axios.get("some url", {
+        withCredentials: true,
+    });
+} catch (error) {
+    console.log(error);
+}
 ```
 ```JS
 fetch("some url", {
