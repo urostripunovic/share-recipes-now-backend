@@ -24,9 +24,6 @@ app.use(cors());
 //app.use("/test/*", cookieAuth); //Whole route middleware
 
 app.post("/test", async (c) => {
-    //const iat = Math.floor(new Date().getTime() / 1000); //issued at time
-    //const exp = iat + 30 * 24 * 60 * 60; //increase the amount of seconds, x*60 minutes, x*60*60 hours, x*24*60*60 days
-
     const token = await sign(
         { user_id: 1, user_name: "para knas", ...expiresIn("1h") }, //no point in catch since i'll be using try-catch
         process.env.SECRET
