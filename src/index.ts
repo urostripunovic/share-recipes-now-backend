@@ -67,7 +67,7 @@ console.log(`Running at http://localhost:${port}`);
 
 export default app;
 
-async function cookieAuth(c, next) {
+async function cookieAuth(c: any, next: any) {
     const token = getCookie(c, "token");
     if (!token) return c.json({ message: "No token found" }, 404);
 
