@@ -30,7 +30,9 @@ export function expiresIn(time?: number | string): TokenInfo {
     if (typeof time === "number") {
         exp = iat + time;
     } else if (typeof time === "string") {
-        const match = time.match(/^(\d+)\s*(d(ays?)?|h(ours?)?|m(in(utes?)?)?)?$/);
+        const match = time.match(
+            /^(\d+)\s*(d(ays?)?|h(ours?)?|m(in(utes?)?)?)?$/
+        );
 
         if (!match) throw new Error("Invalid time format in the input string.");
 
@@ -47,8 +49,8 @@ export function expiresIn(time?: number | string): TokenInfo {
             ["m", 60],
         ]);
 
-        if (unitToSeconds.has(unit)) exp = iat + value * unitToSeconds.get(unit)!;
-        
+        if (unitToSeconds.has(unit))
+            exp = iat + value * unitToSeconds.get(unit)!;
     }
 
     return { iat, exp };
