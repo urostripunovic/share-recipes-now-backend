@@ -86,9 +86,58 @@ app.get("/test", async (c) => {
     return c.json({ user_name }, 200);
 });
 ```
-If I were to change the name of our token to `token1` when getting it then the server will spit out a unauthorized message. So there was no need to add any middleware since Hono has it implemented already. I only need to add better authorization logic and if I want to add that logic to a whole route I would need to create my own middleware and also lookout as to not try and use `withCredentials` and `credentials` on wildcard routes. Hono also has their own [Custom Error Types](https://hono.dev/helpers/jwt#payload-validation) that display if anything is wrong.
+If I were to change the name of our token to `token1` when getting it then the server will spit out a unauthorized message. So there was no need to add any middleware since Hono has it implemented already. I only need to add better authorization logic and if I want to add that logic to a whole route I would need to create my own middleware and also lookout as to not try and use `withCredentials` and `credentials` on wildcard routes. Hono also has their own [Custom Error Types](https://hono.dev/helpers/jwt#payload-validation) that display if anything is wrong. So how would I go with implementing my own middleware, we need to have a secure routes for when a user wants to perform something. It could look something like this:
 
-To close of this Hono+auth+cookie venture the JWT didn't work with a [strong secret key](https://www.digitalocean.com/community/tutorials/nodejs-jwt-expressjs) it only worked when my secret was `test` which is really weird since that was the first one I used. And I got it working by literary turning the server on and off... In summary, Hono works well, env variables work, the REST operations work, auth works as well as when trying it out in Insomnia. With the basics done I can now more towards to implementing the SQLite database.
+```js
+app.use("/test/*", async (c, next) => {
+    const token = getCookie(c, "token");
+    if (!token) return c.json({ message: "No token provided" }, 401);
+
+    try {
+        const { user_name } = await verify(token, process.env.SECRET);
+        c.req.user = { id: 1 ,user_name: user_name };
+        console.log("This is your middleware speaking", c.req.user);
+        await next();
+    } catch (error) {
+        deleteCookie(c, "token");
+        const { name } = error;
+        return c.json({ error: name }, 403);
+    }
+});
+```
+This is the middleware it worked for everything in this route and since I'm using TypeScript it won't like `c.req.user` since it doesn't exist in Hono, maybe they have a better way of doing this I don't know but if they do I'll update my code accordingly. But this is the wildcard approach and as we established using `credentials` and `withCredentials` can pose some issues and I need to make sure that the route that gives out a cookie isn't under that authed route. I also wrote the middleware as a function as well if I wanted to add them to only specified CRUD routes:
+```js
+async function authMiddle(c, next) {
+    const token = getCookie(c, "token");
+    if (!token) return c.json({ message: "No token provided" }, 401);
+
+    try {
+        const { user_name } = await verify(token, process.env.SECRET);
+        c.req.user = { id: 1, user_name: user_name };
+        console.log("This is your middleware speaking", c.req.user);
+        await next();
+    } catch (error) {
+        deleteCookie(c, "token");
+        const { name } = error;
+        return c.json({ error: name }, 403);
+    }
+}
+```
+One thing to keep in mind is that my custom middleware is async so I would need to update my get route to the following so that TypeScript doesn't complain:
+```js
+app.get("/test", cookieAuth, async (c) => {
+    try {
+        //@ts-ignore
+        const { user_name } = c.req.user;
+        return c.json({ user_name }, 200);
+    } catch (error) {
+        return c.json({ error: "Internal Server Error" }, 500);
+    }
+});
+```
+I could also add a proper try catch block to handle if `c.req.user` doesn't exists but I'll do that when I actually implement the code.
+
+So, to close of this Hono+auth+cookie venture the JWT didn't work at first with a [strong secret key](https://www.digitalocean.com/community/tutorials/nodejs-jwt-expressjs) it only worked when my secret was `test` which is really weird since that was the first one I used. And I got it working by literary turning the server on and off... In summary, Hono works well, env variables work, the REST operations work, auth works as well as when trying it out in Insomnia, implementing my own middleware was new I followed the principles of Express.js and it turned out well. With the basics done, I can now move on towards to implementing the SQLite database.
 
 ## Working with SQLite and Node.js
 
