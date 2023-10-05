@@ -35,7 +35,7 @@ app.get("/api/page", (c) => {
 
 app.post("/test", async (c) => {
     const exp = (new Date().getTime() + 1) / 1000; //increase the amount of seconds, x*60 minutes, x*60*60 hours, x*24*60*60 days
-    const iat = Math.floor(new Date().getTime() / 1000); //issued at time
+    const iat = new Date().getTime() / 1000; //issued at time
 
     const token = await sign(
         { user_id: 1, user_name: "para knas", iat: iat, exp: exp },
