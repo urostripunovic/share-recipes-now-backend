@@ -123,8 +123,7 @@ One thing to keep in mind is that my custom middleware is async so I would need 
 ```js
 app.get("/test", cookieAuth, async (c) => {
     try {
-        //@ts-ignore
-        const { user_name } = c.req.user;
+        const { user_name } = c.get("user");
         return c.json({ user_name }, 200);
     } catch (error) {
         return c.json({ error: "Internal Server Error" }, 500);
