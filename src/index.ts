@@ -3,8 +3,10 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { handle } from "@hono/node-server/vercel";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
-import { jwt, sign, verify } from "hono/jwt";
+import { sign, verify } from "hono/jwt";
 import { cors } from "hono/cors";
+import { cookieAuth } from "./middleware/auth";
+import { expiresIn } from "./utils/jwtExpires";
 
 type Variables = {
     user: {
@@ -19,26 +21,14 @@ dotenv.config();
 
 app.use(cors());
 
-app.use(
-    "/api/*",
-    jwt({
-        secret: process.env.SECRET,
-    })
-);
-
-app.get("/api/page", (c) => {
-    const payload = c.get("jwtPayload");
-    return c.json(payload); // eg: { "sub": "1234567890", "name": "John Doe", "iat": 1516239022 }
-});
-
 //app.use("/test/*", cookieAuth); //Whole route middleware
 
 app.post("/test", async (c) => {
-    const exp = (new Date().getTime() + 1) / 1000; //increase the amount of seconds, x*60 minutes, x*60*60 hours, x*24*60*60 days
-    const iat = new Date().getTime() / 1000; //issued at time
+    //const iat = Math.floor(new Date().getTime() / 1000); //issued at time
+    //const exp = iat + 30 * 24 * 60 * 60; //increase the amount of seconds, x*60 minutes, x*60*60 hours, x*24*60*60 days
 
     const token = await sign(
-        { user_id: 1, user_name: "para knas", iat: iat, exp: exp },
+        { user_id: 1, user_name: "para knas", ...expiresIn("1h") }, //no point in catch since i'll be using try-catch
         process.env.SECRET
     );
     setCookie(c, "token", token, {
@@ -66,17 +56,3 @@ serve({
 console.log(`Running at http://localhost:${port}`);
 
 export default app;
-
-async function cookieAuth(c: any, next: any) {
-    const token = getCookie(c, "token");
-    if (!token) return c.json({ message: "No token found" }, 404);
-
-    try {
-        const json = await verify(token, process.env.SECRET);
-        c.set("user", json);
-        await next();
-    } catch (error) {
-        deleteCookie(c, "token");
-        return c.json({ error: error.message }, 403);
-    }
-}
