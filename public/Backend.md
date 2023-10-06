@@ -147,6 +147,21 @@ There is not need to download the jsonwebtoken npm package but I'm not gonna lie
 So, to close of this Hono+auth+cookie venture I ran into an issue with the JWT not working at first with a [strong secret key](https://www.digitalocean.com/community/tutorials/nodejs-jwt-expressjs) it only worked when my secret was `test` which is really weird since that was the first one I used. And I got it working by literary turning the server on and off... In summary, Hono works well, env variables work, the REST operations work, auth works as well as when trying it out in Insomnia, implementing my own middleware was new I followed the principles of Express.js and it turned out well, and looking into the abyss that is security damn... I learnt a lot and I can say I'm better off for it as well. With the basics 'done' (haven't forgotten you access and refresh token), I can now move on towards to implementing the SQLite database.
 
 ## Working with SQLite and Node.js
+Well researching about SQLite for node gave a couple of results, apparently there are two SQLite npm packages that do the job, [sqlite3](https://www.npmjs.com/package/sqlite3) and [better-sqlite3](https://www.npmjs.com/package/better-sqlite3). One would think that the one name better is better? And indeed it is is, where is the issue where the author [explains it](https://github.com/WiseLibs/better-sqlite3/issues/262) but to explain it beefily, better DX, that's it, I'm not gonna test sqlite3 when there is a better option out there.
+
+My database file didn't work so I had to follow this [tutorial](https://www.guru99.com/sqlite-database.html) so that it would work... a little bit annoying that one can't just have a sql- or db file to get it working but it seems like sqlite files are encrypted or something, idk but it works at least. This is the code for setting up the database nothing really out of the ordinary:
+```js
+import Database from "better-sqlite3";
+import path from 'path';
+
+const db = new Database(path.resolve('test.db'), { verbose: console.log });
+const stmt = db.prepare("INSERT INTO User (email, user_name, password) VALUES (?, ?, ?)");
+stmt.run('user@example.com', 'username', 'password123');
+const user = db.prepare('SELECT * FROM User WHERE user_id = ?').get(1);
+console.log(user);
+```
+One thing to keep in mind though is that you can drop tables with SQLite, you'd need to delete the whole database to be able to do that. While developing I'll use a test db as to not clutter the whole thing. But I'm already prepared for one thing... and that is the shit show that will ensue if i decide to change any of the  table in the database... But now to the fun part of populating a bunch of tables and then joining them to get a proper JSON object. It's a good thing that I've already done the heavy work in the documentation of [db quires](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md), this will be a cake walk. 
+
 
 
 ## API end points/routes

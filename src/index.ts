@@ -7,6 +7,13 @@ import { sign, verify } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
 import { expiresIn } from "./utils/jwtExpires";
+import Database from "better-sqlite3";
+import path from 'path';
+
+dotenv.config();
+
+const db = new Database(path.resolve('test.db'), { verbose: console.log });
+console.log(db);
 
 type Variables = {
     user: {
@@ -16,9 +23,6 @@ type Variables = {
 };
 
 const app = new Hono<{ Variables: Variables }>();
-
-dotenv.config();
-
 app.use(cors());
 
 //app.use("/test/*", cookieAuth); //Whole route middleware
@@ -26,7 +30,7 @@ app.use(cors());
 app.post("/test", async (c) => {
     const token = await sign(
         { user_id: 1, user_name: "para knas", ...expiresIn("1h") }, //no point in catch since i'll be using try-catch
-        process.env.SECRET
+        process.env.SECRET!
     );
     setCookie(c, "token", token, {
         httpOnly: true,

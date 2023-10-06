@@ -6,7 +6,7 @@ export async function cookieAuth(c: any, next: any) {
     if (!token) return c.json({ message: "No token found" }, 404);
 
     try {
-        const json = await verify(token, process.env.SECRET);
+        const json = await verify(token, process.env.SECRET!);
         c.set("user", json);
         await next();
     } catch (error) {

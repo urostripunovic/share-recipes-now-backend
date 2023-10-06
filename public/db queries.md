@@ -170,10 +170,16 @@ There was a couple of use cases I didn't think for, for instance if a score isn'
 INSERT INTO Score (user_id,recipe_id, score) VALUES (1,1,3);
 INSERT INTO Score (user_id,recipe_id, score) VALUES (2,1,2);
 INSERT INTO Score (user_id,recipe_id, score) VALUES (1,2,4.2);
-SELECT ROUND(AVG(score), 2) FROM Score WHERE recipe_id = 1;
+SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = 1;
 UPDATE Score SET score = 1 WHERE user_id = 1 AND recipe_id = 1;
-SELECT ROUND(AVG(score), 2) FROM Score WHERE recipe_id = 1;
+SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = 1; FROM Score WHERE recipe_id = 1;
 ```
+And this is how one would get the score a user has already put on a recipe:
+```sql
+SELECT score from Score WHERE user_id = 1 AND recipe_id = 1;
+```
+The idea is, if a user already has a score for a recipe, they can't add a new one put instead update it. I could remove the old row and then insert a new one, which would be easier but I think updating it would be better for obvious reasons.
+
 ## Add comments to a recipe as well as chain it
 There are no difficulties trying to add a comment but creating a comment chain/thread will maybe.
 ```sql

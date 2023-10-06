@@ -1,0 +1,92 @@
+PRAGMA foreign_keys = ON;
+
+-- Användarinformation och autentisering
+CREATE TABLE IF NOT EXISTS User (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    user_name TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    display_name TEXT,
+    profile_image BLOB,
+    bio TEXT,
+    auth_method TEXT
+);
+
+-- Användares sparade recept
+CREATE TABLE IF NOT EXISTS Saved (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    recipe_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE
+);
+
+-- Receptinformation
+CREATE TABLE IF NOT EXISTS Recipe (
+    recipe_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    difficulty INTEGER NOT NULL CHECK (difficulty >= 0 AND difficulty <= 5),
+    time INTEGER NOT NULL CHECK (time >= 0),
+    dish_image BLOB,
+    UNIQUE (user_id, title),
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+);
+
+-- Ingredienser för recept
+CREATE TABLE IF NOT EXISTS Ingredient (
+    ingredient_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+);
+
+-- Kopplingstabell mellan recept och ingredienser
+CREATE TABLE IF NOT EXISTS RecipeIngredient (
+    recipe_id INTEGER NOT NULL,
+    ingredient_id INTEGER NOT NULL,
+    amount TEXT NOT NULL,
+    PRIMARY KEY (recipe_id, ingredient_id),
+    FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE,
+    FOREIGN KEY (ingredient_id) REFERENCES Ingredient(ingredient_id)
+);
+
+-- Receptinstruktioner
+CREATE TABLE IF NOT EXISTS Instruction (
+    recipe_id INTEGER NOT NULL,
+    instruction_order INTEGER NOT NULL,
+    instruction TEXT NOT NULL,
+    PRIMARY KEY (instruction_order, recipe_id),
+    FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE
+);
+
+-- Kommentarer på recept
+CREATE TABLE IF NOT EXISTS Comments (
+    comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    message TEXT,
+    parent_id INTEGER,
+    timestamp TIMESTAMP,
+    FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+);
+
+
+-- Receptbetyg från användare
+CREATE TABLE IF NOT EXISTS Score (
+    user_id INTEGER NOT NULL,
+    score_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_id INTEGER NOT NULL,
+    score INTEGER CHECK (score >= 0 AND score <= 5),
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+    FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE
+    UNIQUE (user_id, recipe_id)
+);
+
+-- Användarsessioner
+CREATE TABLE IF NOT EXISTS Session (
+    session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    refresh_token TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON CASCADE DELETE
+);
