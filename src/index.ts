@@ -8,12 +8,15 @@ import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
 import { expiresIn } from "./utils/jwtExpires";
 import Database from "better-sqlite3";
-import path from 'path';
+import path from "path";
 
 dotenv.config();
 
-const db = new Database(path.resolve('test.db'), { verbose: console.log });
-console.log(db);
+const db = new Database(path.resolve("test.db"), { verbose: console.log });
+//console.log(db);
+
+const allUsers = db.prepare('SELECT * FROM User').all();
+console.log(allUsers)
 
 type Variables = {
     user: {
