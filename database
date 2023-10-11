@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS Ingredient (
 CREATE TABLE IF NOT EXISTS RecipeIngredient (
     recipe_id INTEGER NOT NULL,
     ingredient_id INTEGER NOT NULL,
-    amount TEXT NOT NULL,
+    amount TEXT,
     PRIMARY KEY (recipe_id, ingredient_id),
     FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE,
     FOREIGN KEY (ingredient_id) REFERENCES Ingredient(ingredient_id)

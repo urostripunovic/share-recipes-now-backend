@@ -49,7 +49,7 @@ export function expiresIn(time?: number | string): TokenInfo {
             ["m", 60],
         ]);
 
-        if (unitToSeconds.has(unit))
+        if (unitToSeconds?.has(unit))
             exp = iat + value * unitToSeconds.get(unit)!;
     }
 

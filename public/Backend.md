@@ -162,11 +162,32 @@ console.log(user);
 ```
 One thing to keep in mind though is that you can drop tables with SQLite, you'd need to delete the whole database to be able to do that. While developing I'll use a test db as to not clutter the whole thing. But I'm already prepared for one thing... and that is the shit show that will ensue if i decide to change any of the  table in the database... But now to the fun part of populating a bunch of tables and then joining them to get a proper JSON object. It's a good thing that I've already done the heavy work in the documentation of [db quires](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md), this will be a cake walk. 
 
+I've noticed something when I want to create a recipe, I need a `recipe_id` before I can add the Instructions and RecipeIngredients so a recipe would first need to be created before instructions and RecipeIngredients can be added. I also had the trouble of how I could add ingredients that already exist since I do want my database to be robust and be able to remember all ingredients and it was easy all I needed was something called `IGNORE` which I found on [stackoverflow](https://stackoverflow.com/questions/64053514/sqlite-insert-or-ignore-doesnt-ignore-duplicates). Meaning that users are able to insert duplicates but the database will ignore them.
+
+I also found on issue with how I would add recipe ingredients with only the ingredient id, having only the name could lead to spelling errors and new ingredients cluttering the table. So I thought of the idea that when one first creates a recipe there will be two fields one for amount and the other ingredient, the Ingredients table will be queried to see if the ingredient exits and if it does it will provide an ingredient_id that will be stored in an array the same size of the recipe ingredient list so far. If the ingredient doesn't exist it will first insert the ingredients and then return their ids and in this way I can then fill up the RecipeIngredient table for a recipe of a user but what about combinations? let's say some ingredients exist and others don't? I don't know yet how I would solve it. The best thing to do would be to fill up the Ingredients table with ingredients and in that way avoid this hassle but we'll see how it solve this.
+
+idea for second recipe: add some of the same ingredients with ignore tag, fetch the ids and insert into recipe ingredient. Do so via a transaction function, add a bunch of instructions the same way and then execute them together. Keep in mind how the update would need to be done.
 
 
+Idea for creating a recipe would be, first create the title and the such next step would be to add the ingredients and amounts, this could be solved in a number of ways first by typing in all the ingredients and then getting all the ids to which recipe ingredients can be filled out either a split process, the last step would be to add instructions easiest part
 ## API end points/routes
-
-
+These are the routes that will be roughly implemented some will be in steps while others is one API call. 
+- One to create the user
+- One to log in the user, access token and refresh tokens are set here
+- One to create the recipe of a user_id with title, description, difficulty, dish_image
+    The next step are the following to fill up the recipe:
+    - One to add the RecipeIngredient/Ingredient (Ingredient will autocomplete if it doesn't exist it will insert or else just insert into RecipeIngredient)
+        Make sure to also when inserting that Ingredient query runs first and then RecipeIngredient query.
+    - Instructions 
+- One to save the recipes
+- One to rate the recipes
+- One to view the recipes
+- One to search the recipes
+- One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
+- One for users to add a comment to a recipe
+- One for a user to view their user info, saved recipes, created recipes and comments
+- One for top recipes
+- One for less than 30 min recipes
 ## Deploy a server
 So I ran into the issue of trying to deploy serverless functions to netlify before and to be honest I was just lazy and didn't read up on it but now I'm even more so 'cos [Hono documentation](https://hono.dev/getting-started/netlify) tells me I need Deno, but I don't use Deno, I use Node. And [Vercel](https://vercel.com/guides/using-express-with-vercel) seems to works well with [Hono + Node](https://hono.dev/getting-started/vercel) but I would need to try this out once I start working on the backend code. And I haven't forgotten all the comments on my PS plus randomizer asking why the load time is so slow, don't worry I will upload it to a proper server that costs money when I remake the website.
 

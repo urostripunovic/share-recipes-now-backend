@@ -15,8 +15,31 @@ dotenv.config();
 const db = new Database(path.resolve("test.db"), { verbose: console.log });
 //console.log(db);
 
-const allUsers = db.prepare('SELECT * FROM User').all();
-console.log(allUsers)
+
+const allUsers = db.prepare("SELECT * FROM User").all();
+console.log(allUsers);
+
+const recipe = db.prepare("SELECT * FROM Recipe WHERE user_id=?").get(1);
+console.log(recipe);
+
+const ingredients = db.prepare("SELECT name FROM Ingredient").all();
+console.log(ingredients);
+
+const recipe_ingredient = db
+    .prepare(
+        "SELECT i.name, ri.amount FROM RecipeIngredient ri JOIN Ingredient AS i ON i.ingredient_id = ri.ingredient_id"
+    )
+    .all();
+console.log(recipe_ingredient);
+
+const instructions = db
+    .prepare("SELECT * FROM Instruction WHERE recipe_id=?")
+    .all(1);
+console.log(instructions);
+
+
+
+
 
 type Variables = {
     user: {
@@ -35,9 +58,10 @@ app.post("/test", async (c) => {
         { user_id: 1, user_name: "para knas", ...expiresIn("1h") }, //no point in catch since i'll be using try-catch
         process.env.SECRET!
     );
-    setCookie(c, "token", token, {
+    setCookie(c, "__session", token, {
         httpOnly: true,
         secure: true,
+        path: "/",
     });
 
     return c.json({ msg: "user logged in", token }, 200);
@@ -45,7 +69,7 @@ app.post("/test", async (c) => {
 
 app.get("/test", cookieAuth, async (c) => {
     try {
-        const { user_id, user_name } = c.get("user");
+        const { user_id, user_name } = c.var.user;
         return c.json({ user_id, user_name }, 200);
     } catch (error) {
         return c.json({ error: "Internal Server Error" }, 500);
