@@ -1,6 +1,6 @@
 import { Database } from "better-sqlite3";
 
-export interface Recipe {
+export type Recipe = {
     user_id: number;
     user_name: string;
     recipe_id: number;
@@ -20,10 +20,9 @@ export interface Recipe {
  * @throws {Error} If there's an error during the database query.
  */
 export function fastOrRatedFood(db: Database): Recipe[];
-export function fastOrRatedFood(db: Database, score: string): Recipe[];
-export function fastOrRatedFood(db: Database, score?: string): Recipe[] {
-    const part_of_query =
-        score === "score" ? "avg_score >= 4.2" : "R.time < 30";
+export function fastOrRatedFood(db: Database, score: boolean): Recipe[];
+export function fastOrRatedFood(db: Database, score?: boolean): Recipe[] {
+    const part_of_query = score ? "avg_score >= 4.2" : "R.time < 30";
 
     try {
         const json = db

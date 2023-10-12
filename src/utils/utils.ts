@@ -1,4 +1,4 @@
 import { expiresIn } from "./jwtExpires";
-import { fastOrRatedFood } from "./recipeUtils";
+import { fastOrRatedFood, Recipe } from "./recipeUtils";
 
-export { expiresIn, fastOrRatedFood };
+export { expiresIn, fastOrRatedFood, Recipe };

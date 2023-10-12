@@ -9,7 +9,7 @@ import { sign, verify } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
 
-import { expiresIn, fastOrRatedFood } from "./utils/utils";
+import { expiresIn, fastOrRatedFood, Recipe } from "./utils/utils";
 
 dotenv.config();
 
@@ -53,9 +53,17 @@ app.get("/test", cookieAuth, async (c) => {
     }
 });
 
+app.get("/api/recipe/:id", (c) => {
+    //hämta all info för recept med :id
+    const id = c.req.param('id');
+    return c.json({hello: `Hello id: ${id}`});
+})
+
+
+
 app.get("/api/fast-food", (c) => {
     try {
-        const json = fastOrRatedFood(db);
+        const json: Recipe[] = fastOrRatedFood(db);
         return c.json(json);
     } catch (error) {
         return c.json({ error }, 500);
@@ -64,7 +72,7 @@ app.get("/api/fast-food", (c) => {
 
 app.get("/api/top-rated-food", async (c) => {
     try {
-        const json = fastOrRatedFood(db, "score");
+        const json: Recipe[] = fastOrRatedFood(db, true);
         return c.json(json);
     } catch (error) {
         return c.json({ error }, 500);

@@ -1,4 +1,4 @@
-interface TokenInfo {
+type TokenInfo = {
     iat: number;
     exp: number;
 }

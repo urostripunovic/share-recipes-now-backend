@@ -175,18 +175,20 @@ UX would look something like this:
 
 
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
+- One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
 - One to create the recipe of a user_id with title, description, difficulty, dish_image
     The next step are the following to fill up the recipe:
     - One to add the RecipeIngredient/Ingredient (Ingredient will autocomplete if it doesn't exist it will insert or else just insert into RecipeIngredient)
         Make sure to also when inserting that Ingredient query runs first and then RecipeIngredient query.
     - Instructions 
 - One to log in the user, access token and refresh tokens are set here
-- One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
 - One for a user to view their user info, saved recipes, created recipes and comments
+- One to let users add a ingredient
+- One to create the user
 - One to save the recipes
 - One to rate the recipes
-- One to create the user
 - One for users to add a comment to a recipe
+- One to search the recipes based on ingredient
 - One to search the recipes
 - One to view the recipes
 - One for top recipes ✅
