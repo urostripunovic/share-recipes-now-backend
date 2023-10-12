@@ -166,28 +166,36 @@ I've noticed something when I want to create a recipe, I need a `recipe_id` befo
 
 I also found on issue with how I would add recipe ingredients with only the ingredient id, having only the name could lead to spelling errors and new ingredients cluttering the table. So I thought of the idea that when one first creates a recipe there will be two fields one for amount and the other ingredient, the Ingredients table will be queried to see if the ingredient exits and if it does it will provide an ingredient_id that will be stored in an array the same size of the recipe ingredient list so far. If the ingredient doesn't exist it will first insert the ingredients and then return their ids and in this way I can then fill up the RecipeIngredient table for a recipe of a user but what about combinations? let's say some ingredients exist and others don't? I don't know yet how I would solve it. The best thing to do would be to fill up the Ingredients table with ingredients and in that way avoid this hassle but we'll see how it solve this.
 
-idea for second recipe: add some of the same ingredients with ignore tag, fetch the ids and insert into recipe ingredient. Do so via a transaction function, add a bunch of instructions the same way and then execute them together. Keep in mind how the update would need to be done.
-
-
-Idea for creating a recipe would be, first create the title and the such next step would be to add the ingredients and amounts, this could be solved in a number of ways first by typing in all the ingredients and then getting all the ids to which recipe ingredients can be filled out either a split process, the last step would be to add instructions easiest part
+Other than that the connection to the database is done, I can put and add what every all that is left setting up the code with better-sqlite3 which isn't that hard to do. The next step would be how to implement and design the api end points.
 ## API end points/routes
+UX would look something like this: 
+- a user creates a recipe, this gives a `recipe_id` a score of zero is also created, 
+- The user has a search field for an ingredient that queries the database if the ingredient doesn't exist then though luck but if a user wants to add a ingredient then they can do so using a route post route more on that later. And then a user just adds the specified `amount` for each `ingredient_id` that the database has put out. 
+- Last step is to provide a list of instructions. The user can add a new one for each click 
+
+
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
-- One to create the user
-- One to log in the user, access token and refresh tokens are set here
 - One to create the recipe of a user_id with title, description, difficulty, dish_image
     The next step are the following to fill up the recipe:
     - One to add the RecipeIngredient/Ingredient (Ingredient will autocomplete if it doesn't exist it will insert or else just insert into RecipeIngredient)
         Make sure to also when inserting that Ingredient query runs first and then RecipeIngredient query.
     - Instructions 
+- One to log in the user, access token and refresh tokens are set here
+- One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
+- One for a user to view their user info, saved recipes, created recipes and comments
 - One to save the recipes
 - One to rate the recipes
-- One to view the recipes
-- One to search the recipes
-- One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
+- One to create the user
 - One for users to add a comment to a recipe
-- One for a user to view their user info, saved recipes, created recipes and comments
-- One for top recipes
-- One for less than 30 min recipes
+- One to search the recipes
+- One to view the recipes
+- One for top recipes ✅
+- One for recipes within a time frame ✅
+
+### Route for top recipes
+Easy as well but this one had almost he same code as less than 30 min so a utility function was created to minsize the code duplication.
+### Route for than 30 min recipes
+Easy nothing to worry about as long as there are recipes for that, this will also take into account all the recipes that do not have a score yet i.e null
 ## Deploy a server
 So I ran into the issue of trying to deploy serverless functions to netlify before and to be honest I was just lazy and didn't read up on it but now I'm even more so 'cos [Hono documentation](https://hono.dev/getting-started/netlify) tells me I need Deno, but I don't use Deno, I use Node. And [Vercel](https://vercel.com/guides/using-express-with-vercel) seems to works well with [Hono + Node](https://hono.dev/getting-started/vercel) but I would need to try this out once I start working on the backend code. And I haven't forgotten all the comments on my PS plus randomizer asking why the load time is so slow, don't worry I will upload it to a proper server that costs money when I remake the website.
 

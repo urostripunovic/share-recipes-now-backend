@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS Score (
     user_id INTEGER NOT NULL,
     score_id INTEGER PRIMARY KEY AUTOINCREMENT,
     recipe_id INTEGER NOT NULL,
-    score INTEGER CHECK (score >= 0 AND score <= 5),
+    score INTEGER DEFAULT 0 CHECK (score >= 0 AND score <= 5),
     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
     FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE
     UNIQUE (user_id, recipe_id)

@@ -86,3 +86,27 @@ const deleteAndUpdate = db.transaction((recipe_id, instruction_order) => {
 });
 deleteAndUpdate(1, 4);
 ```
+
+
+```js
+const allUsers = db.prepare("SELECT * FROM User").all();
+console.log(allUsers);
+
+const recipe = db.prepare("SELECT * FROM Recipe WHERE user_id=?").get(1);
+console.log(recipe);
+
+const ingredients = db.prepare("SELECT name FROM Ingredient").all();
+console.log(ingredients);
+
+const recipe_ingredient = db
+    .prepare(
+        "SELECT i.name, ri.amount FROM RecipeIngredient ri JOIN Ingredient AS i ON i.ingredient_id = ri.ingredient_id"
+    )
+    .all();
+console.log(recipe_ingredient);
+
+const instructions = db
+    .prepare("SELECT * FROM Instruction WHERE recipe_id=?")
+    .all(1);
+console.log(instructions);
+```

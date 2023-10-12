@@ -555,16 +555,16 @@ SELECT
     U.user_name,
     R.recipe_id, 
     R.title, 
-    AVG(S.score) AS score,
+    ROUND(AVG(score), 2) AS avg_score,
     R.difficulty,
     R.time,
     R.dish_image
 FROM Recipe AS R
-INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
+LEFT JOIN Score AS S ON R.recipe_id = S.recipe_id
 INNER JOIN User AS U ON R.user_id = U.user_id
 GROUP BY 
     R.recipe_id
-HAVING average_score >= 4.2;
+HAVING avg_score >= 4.2;
 ```
 The following JSON file contains:
 ```JSON
@@ -591,12 +591,12 @@ SELECT
     U.user_name,
     R.recipe_id, 
     R.title, 
-    AVG(S.score) AS score,
+    ROUND(AVG(score), 2) AS avg_score,
     R.difficulty,
     R.time,
     R.dish_image
 FROM Recipe AS R
-INNER JOIN Score AS S ON R.recipe_id = S.recipe_id
+LEFT JOIN Score AS S ON R.recipe_id = S.recipe_id
 INNER JOIN User AS U ON R.user_id = U.user_id
 GROUP BY 
     R.recipe_id,

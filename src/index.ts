@@ -1,4 +1,6 @@
 import dotenv from "dotenv";
+import path from "path";
+import Database from "better-sqlite3";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { handle } from "@hono/node-server/vercel";
@@ -6,40 +8,15 @@ import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
-import { expiresIn } from "./utils/jwtExpires";
-import Database from "better-sqlite3";
-import path from "path";
+
+import { expiresIn, fastOrRatedFood } from "./utils/utils";
 
 dotenv.config();
 
-const db = new Database(path.resolve("test.db"), { verbose: console.log });
+const db = new Database(path.resolve("test.db") /*{ verbose: console.log }*/);
 //console.log(db);
-
-
-const allUsers = db.prepare("SELECT * FROM User").all();
-console.log(allUsers);
-
-const recipe = db.prepare("SELECT * FROM Recipe WHERE user_id=?").get(1);
-console.log(recipe);
-
-const ingredients = db.prepare("SELECT name FROM Ingredient").all();
-console.log(ingredients);
-
-const recipe_ingredient = db
-    .prepare(
-        "SELECT i.name, ri.amount FROM RecipeIngredient ri JOIN Ingredient AS i ON i.ingredient_id = ri.ingredient_id"
-    )
-    .all();
-console.log(recipe_ingredient);
-
-const instructions = db
-    .prepare("SELECT * FROM Instruction WHERE recipe_id=?")
-    .all(1);
-console.log(instructions);
-
-
-
-
+//const recipe = db.prepare(`SELECT * FROM Recipe`).all();
+//console.log(recipe);
 
 type Variables = {
     user: {
@@ -73,6 +50,24 @@ app.get("/test", cookieAuth, async (c) => {
         return c.json({ user_id, user_name }, 200);
     } catch (error) {
         return c.json({ error: "Internal Server Error" }, 500);
+    }
+});
+
+app.get("/api/fast-food", (c) => {
+    try {
+        const json = fastOrRatedFood(db);
+        return c.json(json);
+    } catch (error) {
+        return c.json({ error }, 500);
+    }
+});
+
+app.get("/api/top-rated-food", async (c) => {
+    try {
+        const json = fastOrRatedFood(db, "score");
+        return c.json(json);
+    } catch (error) {
+        return c.json({ error }, 500);
     }
 });
 

@@ -1,0 +1,43 @@
+import { Database } from "better-sqlite3";
+
+export interface Recipe {
+    user_id: number;
+    user_name: string;
+    recipe_id: number;
+    title: string;
+    avg_score: number;
+    difficulty: string;
+    time: number;
+    dish_image: string;
+}
+
+/**
+ * Retrieve a list of recipes from the database.
+ *
+ * @param {Database} db - The SQLite database instance.
+ * @param {string} [score] - Optional. The type of query to perform ("score" or "time").
+ * @returns {Recipe[]} - An array of recipe objects.
+ * @throws {Error} If there's an error during the database query.
+ */
+export function fastOrRatedFood(db: Database): Recipe[];
+export function fastOrRatedFood(db: Database, score: string): Recipe[];
+export function fastOrRatedFood(db: Database, score?: string): Recipe[] {
+    const part_of_query =
+        score === "score" ? "avg_score >= 4.2" : "R.time < 30";
+
+    try {
+        const json = db
+            .prepare(
+                `SELECT U.user_id, U.user_name, R.recipe_id,  R.title,  ROUND(AVG(S.score), 2) AS avg_score, R.difficulty, R.time, R.dish_image
+            FROM Recipe AS R
+            INNER JOIN User AS U ON R.user_id = U.user_id
+            LEFT JOIN Score AS S ON R.recipe_id = S.recipe_id
+            GROUP BY R.recipe_id
+            HAVING ${part_of_query}`
+            )
+            .all();
+        return json as Recipe[];
+    } catch (error) {
+        throw new Error("An error occurred while querying the database.");
+    }
+}

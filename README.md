@@ -1,9 +1,11 @@
 # share-recipes-now-backend
 Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.org/en) together with the [Hono.js framework](https://hono.dev/). The database in use is [SQLite](https://www.sqlite.org/index.html). This backend supports complete CRUD operations when it comes to create users, recipes, comments, update them, delete them as well as read them. There will be documentation for how the database was formed, created and tested as well as documentation how the Node.js backend server is set up along with an explanation for each REST API end point.
 ## TODO
+- [ ] Rebuild the database and insert ingredients into it.
 - [ ] Look into how update would work together with backend (UPDATE).
 - [ ] Start setting up CRUD operation as well as unit tests.
-- [ ] Full up database with mock data.
+- [ ] API routes
+- [x] Full up database with mock data.
 - [x] Look into SQLite and how to implement in with Hono.
     - Apparently there are npm packages of how to use SQLite: [sqLite,(and/or?) sqlite3](https://www.npmjs.com/package/sqlite) and [better-sqlite3](https://www.npmjs.com/package/better-sqlite3). I would need to read up on how to use it.
 - [x] [Play around with Hono.js to understand it.](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/Backend.md)
