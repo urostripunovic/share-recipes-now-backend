@@ -190,10 +190,12 @@ These are the routes that will be roughly implemented some will be in steps whil
 - One for users to add a comment to a recipe
 - One to search the recipes based on ingredient
 - One to search the recipes
-- One to view the recipes
+- One to view the recipe and its comments ✅
 - One for top recipes ✅
 - One for recipes within a time frame ✅
 
+### View Recipe by id
+Getting the information for each recipe after clicking a thumbnail or of the similar wasn't that hard to implement but printing out the hierarchy of a comment was a lot harder than expected. I had the table down and most of the SQL code done as well but I wasn't really sure how I would tie nested comments together, the idea was that each comment will have an array which would result in a bunch of nested arrays which would be really ugly and I thing a nightmare the work on in the frontend. So instead I opted for a path like system that shows how each comment chain looks like i.e their path, there is a small drawback of this being that the path can be too long and thus lead to an end but at that point the users can talk to each on whatsapp or something. But If I really wanted to fix the hierarchy [Closure tables](https://nehajirafe.medium.com/data-modeling-designing-facebook-style-comments-with-sql-4cf9e81eb164) could be a solution but I'm pretty happy with solving this as it is now.
 ### Route for top recipes
 Easy as well but this one had almost he same code as less than 30 min so a utility function was created to minsize the code duplication.
 ### Route for than 30 min recipes

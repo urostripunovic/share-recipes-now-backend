@@ -219,7 +219,7 @@ SELECT
     user_name,
     message,
     parent_id
-FROM
+FROM CommentHierarchy;
 ```
 With this I would get a proper comment chain for each `comment_id` even if there are no replies for that comment, the code taken from [stackoverflow](https://stackoverflow.com/questions/39435348/select-comments-and-its-replies-sql-server). Kinda cool that me and the poster had the same table design. So with this code I'm able to display every single chain or non chain that exist with this query. With this recursive code I can load in all the comment. An idea is to limit the recipe page to three comments per chain as to not clutter the page and then have a "continue this discussion on another page" button with that `comment_id` on a new page and if that page isn't enough I would just continue that in another url. I could also not load them in and only do so having a `load comments` button that loads in the replies. I could also just load all the comments with a simple `SELECT` and then just write some backend code to match the corresponding `parent_id` to `comment_id` creating a `children: []` and then use them in the two ideas presented above. Nonetheless processing is required either in the backend, frontend or database no matter how I twist and turn!
 
@@ -278,7 +278,7 @@ SELECT
     R.difficulty,
     R.time,
     R.dish_image,
-    AVG(S.score) AS average_score
+    AVG(S.score) AS avg_score
 FROM
     User U
 JOIN
@@ -287,7 +287,7 @@ LEFT JOIN
     Score S ON R.recipe_id = S.recipe_id
 WHERE
     U.user_id = 1 -- This comes from clicked thumbnail
-    AND R.title = 'Delicious Pasta'; -- This would from the title we want to update
+    AND R.recipe_id = 1; -- This would from the title we want to update
 
 -- Ingredients
 SELECT
@@ -322,7 +322,7 @@ CREATE TEMP TABLE TempRecipeId AS -- Work in progress with how I'm fetching the 
 SELECT r.recipe_id
 FROM Recipe r
 JOIN User AS u ON r.user_id = u.user_id
-WHERE r.title = 'Delicious Pasta' AND (SELECT user_id FROM User WHERE user_name='username'); -- user_name is changeable
+WHERE r.id = 1 AND (SELECT user_id FROM User WHERE user_name='username'); -- user_name is changeable
 
 SELECT
     C.comment_id,
@@ -344,7 +344,7 @@ DROP TABLE TempRecipeId;
 The `JSON` file could look like the following:
 ```JSON
 {
-    "recipes": [
+    "recipe": 
         {
             "user_id",
             "user_name",
@@ -376,7 +376,6 @@ The `JSON` file could look like the following:
                 }
             ]
         }
-    ]
 }
 ```
 One thing to keep in mind though is that `"children": []` will be implemented in the backend, as I already mentioned [here](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/public/db%20queries.md#add-comments-to-a-recipe-as-well-as-chain-it).

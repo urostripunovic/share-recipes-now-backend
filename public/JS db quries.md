@@ -110,3 +110,19 @@ const instructions = db
     .all(1);
 console.log(instructions);
 ```
+
+Comments:
+```js
+const insert = db.prepare(`INSERT INTO Comments (recipe_id, user_id, message, parent_id, timestamp) VALUES (@recipe_id, @user_id, @message, @parent_id, @timestamp)`);
+    
+const insertMany = db.transaction((comments) => {
+    for (const comment of comments) insert.run(comment);
+});
+    
+insertMany([
+    { recipe_id: 1, user_id: 1, message: 'This tasted 😋', parent_id: null, timestamp: '2023-10-14 10:31'},
+    { recipe_id: 1, user_id: 2, message: 'Thank you! 😀', parent_id: 1, timestamp: '2023-10-14 10:45'},
+    { recipe_id: 1, user_id: 3, message: 'Please Create More! 😎', parent_id: null, timestamp: '2023-10-14 11:31'},
+    { recipe_id: 1, user_id: 2, message: 'I would you recommend some ketchup on that thing', parent_id: 2, timestamp: '2023-10-14 11:00'},
+]);
+```

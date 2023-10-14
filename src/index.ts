@@ -9,7 +9,14 @@ import { sign, verify } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
 
-import { expiresIn, fastOrRatedFood, Recipe } from "./utils/utils";
+import {
+    expiresIn,
+    fastOrRatedFood,
+    getRecipe,
+    getRecipeIngredients,
+    getInstructions,
+    getComments,
+} from "./utils/utils";
 
 dotenv.config();
 
@@ -53,17 +60,27 @@ app.get("/test", cookieAuth, async (c) => {
     }
 });
 
-app.get("/api/recipe/:id", (c) => {
+app.get("/api/recipe/:id", async (c) => {
     //hämta all info för recept med :id
-    const id = c.req.param('id');
-    return c.json({hello: `Hello id: ${id}`});
-})
+    const id = c.req.param("id");
+    try {
+        const recipe = db.transaction(() => {
+            const recipe = getRecipe(db, id);
+            const recipe_ingredients = getRecipeIngredients(db, id);
+            const instructions = getInstructions(db, id);
+            const comments = getComments(db, id);
+            return { recipe, recipe_ingredients, instructions, comments };
+        });
 
-
+        return c.json(recipe());
+    } catch (error) {
+        return c.json({ error }, 500);
+    }
+});
 
 app.get("/api/fast-food", (c) => {
     try {
-        const json: Recipe[] = fastOrRatedFood(db);
+        const json = fastOrRatedFood(db);
         return c.json(json);
     } catch (error) {
         return c.json({ error }, 500);
@@ -72,7 +89,7 @@ app.get("/api/fast-food", (c) => {
 
 app.get("/api/top-rated-food", async (c) => {
     try {
-        const json: Recipe[] = fastOrRatedFood(db, true);
+        const json = fastOrRatedFood(db, true);
         return c.json(json);
     } catch (error) {
         return c.json({ error }, 500);
