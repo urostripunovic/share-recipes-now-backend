@@ -57,10 +57,7 @@ type RecipeIngredient = {
     amount: string;
 };
 
-export function getRecipeIngredients(
-    db: Database,
-    id: string
-): RecipeIngredient[] {
+export function getRecipeIngredients(db: Database, id: string): RecipeIngredient[] {
     return db
         .prepare(`
         SELECT I.name AS ingredient_name, RI.amount
@@ -76,7 +73,7 @@ type Instruction = {
 };
 
 export function getInstructions(db: Database, id: string): Instruction[] {
-    return db.prepare(` SELECT instruction_order, instruction FROM Instruction WHERE recipe_id = ?`).all(id) as Instruction[];
+    return db.prepare(`SELECT instruction_order, instruction FROM Instruction WHERE recipe_id = ?`).all(id) as Instruction[];
 }
 
 type Comment = {

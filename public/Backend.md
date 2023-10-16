@@ -175,27 +175,46 @@ UX would look something like this:
 
 
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
+- Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe (maybe)
 - One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
 - One to create the recipe of a user_id with title, description, difficulty, dish_image
     The next step are the following to fill up the recipe:
     - One to add the RecipeIngredient/Ingredient (Ingredient will autocomplete if it doesn't exist it will insert or else just insert into RecipeIngredient)
         Make sure to also when inserting that Ingredient query runs first and then RecipeIngredient query.
     - Instructions 
+- Retry all the routes that need a access token once the login is created
 - One to log in the user, access token and refresh tokens are set here
-- One for a user to view their user info, saved recipes, created recipes and comments
-- One to let users add a ingredient
+    - lite mer research här igen så implementationen funkar
+- One for a user to view their user info, saved recipes, created recipes and comments **auth**
+- One to let users add a ingredient **admin auth?**
 - One to create the user
-- One to save the recipes
-- One to rate the recipes
-- One for users to add a comment to a recipe
-- One to search the recipes based on ingredient
-- One to search the recipes
+    - kolla om username redan finns samt att email redan också finns
+    - kolla om password är tillräckligt stark
+- One to save the recipes **auth** 
+- One to rate the recipes **auth** 
+- One for users to add a comment to a recipe **auth** ✅
+- One to search the recipes by ingredient or title ✅
 - One to view the recipe and its comments ✅
 - One for top recipes ✅
 - One for recipes within a time frame ✅
 
+### Save recipe
+
+### Rate recipe
+
+### Insert comment to a recipe
+Was kinda tricky to implement especially when I had `IS NULL` when performing the get recipe route and what do I mean by that? Well when I insert a comment I need to be null in-order to perform the proper recursive sql query but I wasn't sure if I do the null check in the server or the query call. Because the checker would be something like this in typescript:
+
+```js
+const null_if = parent_id || null;
+```
+I could also to it with SQL using this [tutorial](https://www.sqlitetutorial.net/sqlite-functions/sqlite-nullif/) but that seems like a lot more work than needed, I'm not really sure that the benefits are if I'm being honest or if there are any at all.
+
+### Search by ingredient or recipe
+Was extremely easy to implement, worked the same as top and less than routes, I even go to learn about how to work with url queries which was pretty neat and easy to implement, The json return all the recipes as well as the length of the result. The idea is to show the first 3 recipes and then have a button that will redirect to another page with all of the recipes that have not been displayed on the search result, this seems to be a bit more frontend oriented so goal of this route is to provide the frontend with all of the data from each query.
+
 ### View Recipe by id
-Getting the information for each recipe after clicking a thumbnail or of the similar wasn't that hard to implement but printing out the hierarchy of a comment was a lot harder than expected. I had the table down and most of the SQL code done as well but I wasn't really sure how I would tie nested comments together, the idea was that each comment will have an array which would result in a bunch of nested arrays which would be really ugly and I thing a nightmare the work on in the frontend. So instead I opted for a path like system that shows how each comment chain looks like i.e their path, there is a small drawback of this being that the path can be too long and thus lead to an end but at that point the users can talk to each on whatsapp or something. But If I really wanted to fix the hierarchy [Closure tables](https://nehajirafe.medium.com/data-modeling-designing-facebook-style-comments-with-sql-4cf9e81eb164) could be a solution but I'm pretty happy with solving this as it is now.
+Getting the information for each recipe after clicking a thumbnail or of the similar wasn't that hard to implement but printing out the hierarchy of a comment was a lot harder than expected. I had the table down and most of the SQL code done as well but I wasn't really sure how I would tie nested comments together, the idea was that each comment will have an array which would result in a bunch of nested arrays which would be really ugly and I thing a nightmare the work on in the frontend. So instead I opted for a path like system that shows how each comment chain looks like i.e their path, there is a small drawback of this being that the path can be too long and thus lead to an end but at that point the users can talk to each on whatsapp or something. As well as having really long paths with no way of resetting them for each post can lead to the varchar limit filling up really fast. A way to solve this is by having a unique key for each recipe where the `comment_id`'s "reset" for each recipe and in that way ensure that every post can have comment chains. But If I ***really*** wanted to fix the hierarchy [Closure tables](https://nehajirafe.medium.com/data-modeling-designing-facebook-style-comments-with-sql-4cf9e81eb164) could be a solution but I'm pretty happy with solving this as it is now. At best I can either reflect on the how I could fix this backend issue or I'll just do it, not sure yet.
 ### Route for top recipes
 Easy as well but this one had almost he same code as less than 30 min so a utility function was created to minsize the code duplication.
 ### Route for than 30 min recipes
