@@ -177,6 +177,7 @@ UX would look something like this:
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
 - Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe, test it out as well
 - One to let users add a ingredient **admin auth?**
+    - Scrape all the ingredients from this [site](https://food.ndtv.com/ingredient) and att it to the Ingredient Table
 - Change all end points to routes with their corresponding database calls to functions for readability and testing.
 - One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
 - One to create the recipe of a user_id with title, description, difficulty, dish_image
