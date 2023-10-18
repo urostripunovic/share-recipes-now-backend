@@ -21,9 +21,12 @@ import {
 dotenv.config();
 
 const db = new Database(path.resolve("test.db") /*{ verbose: console.log }*/);
+db.pragma("journal_mode = WAL");
 //console.log(db);
 //const recipe = db.prepare(`SELECT * FROM Recipe`).all();
 //console.log(recipe);
+
+console.log(db.prepare(`SELECT * FROM Saved WHERE user_id = 1`).all())
 
 type Variables = {
     user: {
@@ -60,28 +63,105 @@ app.get("/test", cookieAuth, async (c) => {
     }
 });
 
-//middleware här med
-app.post("/api/rate-recipe/:id", async (c) => {
-    const recipe_id = c.req.param("id");
-    const { score } = await c.req.parseBody();
-    //const { user_id } = c.var.user;
-    //kolla på ngt som heter upsert
-    return c.json({recipe_id, score})
+app.post("/api/register/", (c) => {
+    //Check if user name exists
+    //Check if email is already in use
+    //Check if password is strong enough
+    //Change image to blob
+    
+
+    return c.json({message: `User has been created!`});
 })
 
-//Lägg till middleware här när det är done
-app.post("/api/comment-on-recipe/:id", async (c) => {
-    const recipe_id = c.req.param("id");
-    const { user_id, message, parent_id, timestamp } = await c.req.parseBody();
+//middleware här också
+app.get("/api/save-recipe/:recipe_id", async (c) => {
     //const { user_id } = c.var.user;
-    const null_if = parent_id || null;
+    const id = c.req.param('recipe_id');
+    const user_id = 1;
+
+    try {
+        const saved = db.prepare(`SELECT id FROM Saved WHERE user_id = ? AND recipe_id = ?`).get(user_id, id) ? true : false;
+        return c.json({ saved });
+    } catch (error) { return c.json({ error }); }
+});
+
+//middleware här också
+app.delete("/api/save-recipe/:recipe_id", async (c) => {
+    //const { user_id } = c.var.user;
+    const id = c.req.param('recipe_id');
+    const user_id = 1;
+
+    try {
+        db.prepare(`DELETE FROM Saved WHERE user_id = ? AND recipe_id = ?`).run(user_id, id);
+        return c.json({ message: `recipe_id: ${id} is removed from user_id: ${user_id}` });
+    } catch (error) { return c.json({ error }); }
+});
+
+//lägg till middleware här
+app.post("/api/save-recipe/:recipe_id", async (c) => {
+    //const { user_id } = c.var.user;
+    const id = c.req.param('recipe_id');
+    const user_id = 1;
+
+    try {
+        db.prepare(`INSERT INTO Saved (user_id, recipe_id) VALUES (?, ?)`).run(user_id, id);
+        return c.json({ message: `recipe_id: ${id} is saved to user_id: ${user_id}` });
+    } catch (error) { return c.json({ error }); }
+});
+
+//lägg till middleware här
+app.get("/api/get-user-score/:recipe_id", async (c) => {
+    const recipe_id = c.req.param("recipe_id");
+    //const { user_id } = c.var.user; //get user_id from cookieAuth
+    try {
+        const score = db
+            .prepare(
+                `SELECT score FROM Score WHERE user_id = ? AND recipe_id = ?`
+            )
+            .get(3, recipe_id) || { score: null };
+        return c.json(score, 200);
+    } catch (error) {
+        return c.json({ error }, 500);
+    }
+});
+
+//middleware här med
+app.post("/api/rate-recipe/:recipe_id", async (c) => {
+    const recipe_id = c.req.param("recipe_id");
+    const score = Number(c.req.query("score"));
+    //const { user_id } = c.var.user; //get user_id from cookieAuth
+    //kolla på ngt som heter upsert
+    try {
+        db.prepare(
+            `INSERT OR REPLACE INTO Score (user_id, recipe_id, score) VALUES (?, ?, ?)
+            ON CONFLICT (user_id, recipe_id) DO UPDATE SET score=${score}
+            `
+        ).run(1, recipe_id, score);
+
+        return c.json({ ok: true }, 201);
+    } catch (error) {
+        return c.json({ error }, 500);
+    }
+});
+
+//Lägg till middleware här när det är done
+app.post("/api/comment-on-recipe/:recipe_id", async (c) => {
+    const recipe_id = c.req.param("recipe_id");
+    const { message, parent_id, timestamp } = await c.req.parseBody();
+    //const { user_id } = c.var.user;
+    const user_id = 1; //remove later when cookie auth is added
 
     try {
         db.prepare(
-            `INSERT INTO Comments (recipe_id, user_id, message, parent_id, timestamp) VALUES (?, ?, ?, ?, ?)`
-        ).run(recipe_id, user_id, message, null_if, timestamp);
-        return c.json({ message: `comment has been posted to recipe: ${recipe_id}` }, 201);
-    } catch (error) { return c.json({ error }) }
+            `INSERT INTO Comments (recipe_id, user_id, message, parent_id, timestamp) VALUES (?, ?, ?, NULLIF(?, ''), ?)`
+        ).run(recipe_id, user_id, message, parent_id, timestamp);
+        return c.json(
+            { message: `comment has been posted to recipe: ${recipe_id}` },
+            201
+        );
+    } catch (error) {
+        return c.json({ error });
+    }
 });
 
 app.get("/api/search-recipe", (c) => {
@@ -110,23 +190,34 @@ app.get("/api/search-recipe", (c) => {
         }
     });
 
-    return c.json(transactions());
+    return c.json(transactions(), 200);
 });
 
-app.get("/api/recipe/:id", async (c) => {
+app.get("/api/recipe/:recipe_id", async (c) => {
     //hämta all info för recept med :id
-    const id = c.req.param("id");
+    const id = c.req.param("recipe_id");
     try {
         const recipe = db.transaction(() => {
             const recipe = getRecipe(db, id);
+            //spara denna tills vidare kolla i recipeUtils efter några scores finns
+            const score = db
+                .prepare(
+                    `SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = ?`
+                )
+                .get(id);
             const recipe_ingredients = getRecipeIngredients(db, id);
             const instructions = getInstructions(db, id);
             const comments = getComments(db, id);
-            //const user_specific_score = db.prepare(`SELECT score FROM Score WHERE user_id = ? and recipe_id = ?`).get(1, id)
-            return { recipe, recipe_ingredients, instructions, comments };
+            return {
+                recipe,
+                score,
+                recipe_ingredients,
+                instructions,
+                comments,
+            };
         });
 
-        return c.json(recipe());
+        return c.json(recipe(), 200);
     } catch (error) {
         return c.json({ error }, 500);
     }
@@ -135,7 +226,7 @@ app.get("/api/recipe/:id", async (c) => {
 app.get("/api/fast-food", (c) => {
     try {
         const json = fastOrRatedFood(db);
-        return c.json(json);
+        return c.json(json, 200);
     } catch (error) {
         return c.json({ error }, 500);
     }
@@ -144,7 +235,7 @@ app.get("/api/fast-food", (c) => {
 app.get("/api/top-rated-food", async (c) => {
     try {
         const json = fastOrRatedFood(db, true);
-        return c.json(json);
+        return c.json(json, 200);
     } catch (error) {
         return c.json({ error }, 500);
     }

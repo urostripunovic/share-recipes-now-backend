@@ -44,11 +44,10 @@ export function fastOrRatedFood(db: Database, score?: boolean): Recipe[] {
 
 export function getRecipe(db: Database, id: string): Recipe {
     return db
-        .prepare(
-        `SELECT U.user_id, U.user_name, R.recipe_id, R.title, R.description, R.difficulty, R.time, R.dish_image, AVG(S.score) AS avg_score
+        .prepare( //, COUNT(U.user_id) AS votes
+        `SELECT U.user_id, U.user_name, R.recipe_id, R.title, R.description, R.difficulty, R.time, R.dish_image
         FROM User U
         JOIN Recipe R ON U.user_id = R.user_id
-        LEFT JOIN Score S ON R.recipe_id = S.recipe_id
         WHERE R.recipe_id = ?`).get(id) as Recipe;
 }
 

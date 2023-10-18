@@ -172,7 +172,7 @@ INSERT INTO Score (user_id,recipe_id, score) VALUES (2,1,2);
 INSERT INTO Score (user_id,recipe_id, score) VALUES (1,2,4.2);
 SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = 1;
 UPDATE Score SET score = 1 WHERE user_id = 1 AND recipe_id = 1;
-SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = 1; FROM Score WHERE recipe_id = 1;
+SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = 1;
 ```
 And this is how one would get the score a user has already put on a recipe:
 ```sql
@@ -243,11 +243,9 @@ So if I'd like to reply to someone I would first need to get their comment id an
 Nothing issues when saving a recipe for multiple users. I wanted the save the the recipe to a specific `user_name` but what would happen if a user changes their username? Well all the info would be lost or moved to the next person taking that username so tying everything to an id the for the better. I know typing this out probably makes me look stupid but hey, I gotta learn sooner or later!
 
 ```sql
-INSERT INTO Saved (user_id, recipe_id) 
-VALUES (1, 1);
+INSERT INTO Saved (user_id, recipe_id) VALUES (1, 1);
 
-INSERT INTO Saved (user_id, recipe_id) 
-VALUES (2, 1);
+INSERT INTO Saved (user_id, recipe_id) VALUES (2, 1);
 
 SELECT * FROM Saved
 ```

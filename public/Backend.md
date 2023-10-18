@@ -175,7 +175,9 @@ UX would look something like this:
 
 
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
-- Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe (maybe)
+- Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe, test it out as well
+- One to let users add a ingredient **admin auth?**
+- Change all end points to routes with their corresponding database calls to functions for readability and testing.
 - One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
 - One to create the recipe of a user_id with title, description, difficulty, dish_image
     The next step are the following to fill up the recipe:
@@ -186,21 +188,27 @@ These are the routes that will be roughly implemented some will be in steps whil
 - One to log in the user, access token and refresh tokens are set here
     - lite mer research här igen så implementationen funkar
 - One for a user to view their user info, saved recipes, created recipes and comments **auth**
-- One to let users add a ingredient **admin auth?**
 - One to create the user
     - kolla om username redan finns samt att email redan också finns
     - kolla om password är tillräckligt stark
-- One to save the recipes **auth** 
-- One to rate the recipes **auth** 
+- One to save the recipes **auth** ✅
+    - get saved, post saved, delete saved ✅
+    - Fix the saved recipe as well so that one can only save one recipe and not multiple ✅
+- One to get user score **auth** ✅
+- One to rate the recipes **auth** ✅
 - One for users to add a comment to a recipe **auth** ✅
 - One to search the recipes by ingredient or title ✅
 - One to view the recipe and its comments ✅
 - One for top recipes ✅
 - One for recipes within a time frame ✅
 
+### Register user
+
 ### Save recipe
+This one was easy as well but I also noticed that a user can save the same recipe multiple times which isn't optimal so I would need to update my Saved table to have unique constraint of (user_id, recipe_id). The next question becomes how would I remove the saved well it's the same as the rate recipe one, get if the user has saved the recipe and insert or delete if the user doesn't want to save it anymore, this though can't use UPSERT so two api end points are in order, maybe it's not but this seems to be the easiest way to do it.
 
 ### Rate recipe
+This one was a bit harder to implement not because the code is hard but rather the api end point design and how to interact with the database. The idea is to have the user update if they already have an existing score and insert if they don't. How would the backend know this? The initial idea is to have three API end points, one that get's the current score if there is one so a GET `/api/get-user-score/` end point would be needed, if the score is null an POST `/api/set-score/:recipe_id?score=5` end point and if score is not null then a `/api/update-score/:recipe_id?score=5` is in order. Requires some code to be written but that isn't the issue but rather SQLite has something called [UPSERT](https://www.sqlite.org/lang_upsert.html) where a user can either insert or update their score which requires a key constraint in order to work which I have. So what's the issue well reading up on it using UPSERT take a little performance hit but provides a better DX and I also want to provide the frontend with the score if they'd like to use it while I'm at it why not implement the two other API end points. But in all honesty why make it harder when SQLite has provided a solution to it? Might as well use it and provide the score end point as well. Funny thing is even though UPSERT exists `INSERT OR REPLACE` also exists, shocker, but this solution isn't really that optimal because I would lose the row when in fact I want to update it, but since I'm just adding and removing score values of each user for a recipe this isn't really much of an issue. But UPSERT gives me more control and is a overall better design choice I think. 
 
 ### Insert comment to a recipe
 Was kinda tricky to implement especially when I had `IS NULL` when performing the get recipe route and what do I mean by that? Well when I insert a comment I need to be null in-order to perform the proper recursive sql query but I wasn't sure if I do the null check in the server or the query call. Because the checker would be something like this in typescript:
