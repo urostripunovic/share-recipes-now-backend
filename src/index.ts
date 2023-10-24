@@ -35,6 +35,11 @@ type Variables = {
     };
 };
 
+interface Exist {
+    user_name?: string;
+    email?: string,
+}
+
 const app = new Hono<{ Variables: Variables }>();
 app.use(cors());
 
@@ -63,14 +68,27 @@ app.get("/test", cookieAuth, async (c) => {
     }
 });
 
+
+app.get("/api/register/exists", (c) => {
+    //use like statement return true or false if username is already in use
+    const { user_name, e_mail } = c.req.query();
+    //console.log(username, e_mail) //"test1@email.com"
+    const exists = db.prepare("SELECT user_name, email FROM User WHERE user_name = ? OR email = ?").get(user_name, e_mail) as unknown as Exist;
+
+    const username = exists?.user_name ? true : false;
+    const email = exists?.email ? true : false;
+
+    return c.json({ username, email });
+})
+
 app.post("/api/register/", (c) => {
-    //Check if user name exists
-    //Check if email is already in use
-    //Check if password is strong enough
+    //Check if user name exists this requires another api end point, done
+    //Check if email is already in use this requires another api end point, done
+    //Check if password is strong enough done on the frontend, regex?
     //Change image to blob
     
 
-    return c.json({message: `User has been created!`});
+    return c.json({ message: `User has been created!` });
 })
 
 //middleware här också
@@ -84,6 +102,7 @@ app.get("/api/save-recipe/:recipe_id", async (c) => {
         return c.json({ saved });
     } catch (error) { return c.json({ error }); }
 });
+
 
 //middleware här också
 app.delete("/api/save-recipe/:recipe_id", async (c) => {
@@ -124,6 +143,7 @@ app.get("/api/get-user-score/:recipe_id", async (c) => {
         return c.json({ error }, 500);
     }
 });
+
 
 //middleware här med
 app.post("/api/rate-recipe/:recipe_id", async (c) => {
