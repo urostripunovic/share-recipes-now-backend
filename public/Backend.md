@@ -210,7 +210,8 @@ These are the routes that will be roughly implemented some will be in steps whil
 
 ### Access user information
 
-### Creating seperate routes honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read.
+### Creating seperate routes 
+honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read. There are a bunch of files but at least the code is no more readable and not a cluster f... 
 
 ### Login
 
