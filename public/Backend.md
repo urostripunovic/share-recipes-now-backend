@@ -175,6 +175,8 @@ UX would look something like this:
 
 
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
+- Implement the api.ts file or not see how easy it is.
+- Implement a rate limit for login, there is a [npm package for it using redis](https://github.com/upstash/ratelimit#install)
 - Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe, test it out as well
 - One to let users add a ingredient **admin auth?**
     - Scrape all the ingredients from this [site](https://food.ndtv.com/ingredient) and att it to the Ingredient Table
@@ -190,8 +192,11 @@ These are the routes that will be roughly implemented some will be in steps whil
     - lite mer research här igen så implementationen funkar
 - One for a user to view their user info, saved recipes, created recipes and comments **auth**
 - One to create the user
-    - kolla om username redan finns samt att email redan också finns
-    - kolla om password är tillräckligt stark
+    - try rendering a image.
+    - ensure that images are of the right type. ✅
+    - kolla om username redan finns samt att email redan också finns ✅
+    - kolla om password är tillräckligt stark ✅
+    - kolla även hur man skall lägga till en bild, allt i ett? ✅
 - One to save the recipes **auth** ✅
     - get saved, post saved, delete saved ✅
     - Fix the saved recipe as well so that one can only save one recipe and not multiple ✅
@@ -203,7 +208,14 @@ These are the routes that will be roughly implemented some will be in steps whil
 - One for top recipes ✅
 - One for recipes within a time frame ✅
 
+### Access user information
+
+### Creating seperate routes honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read.
+
+### Login
+
 ### Register user
+Very easy to implement only that that needed to be done was change the image file to a blob type. Small checks were done for when two users want to create a user with the same username or email there won't be a race condition on the frontend. I've also created a another api end point to check the usernames or emails while typing the form instead of having to submit the form and then get an error message saying that the email or username is already in use. I also forgot to ensure that only the right image types can be uploaded to the database imagine the dangers if I forgot...
 
 ### Save recipe
 This one was easy as well but I also noticed that a user can save the same recipe multiple times which isn't optimal so I would need to update my Saved table to have unique constraint of (user_id, recipe_id). The next question becomes how would I remove the saved well it's the same as the rate recipe one, get if the user has saved the recipe and insert or delete if the user doesn't want to save it anymore, this though can't use UPSERT so two api end points are in order, maybe it's not but this seems to be the easiest way to do it.
