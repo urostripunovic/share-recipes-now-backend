@@ -25,7 +25,7 @@ dotenv.config();
 const db = new Database(path.resolve("test.db") /*{ verbose: console.log }*/);
 db.pragma("journal_mode = WAL");
 
-//console.log(db.prepare(`SELECT * FROM User WHERE user_name = ?`).get("test_user_6"));
+//console.log(db.prepare(`SELECT * FROM User`).all());
 
 type Variables = {
     database: db;
@@ -38,6 +38,7 @@ type Variables = {
 const app = new Hono<{ Variables: Variables }>();
 app.use(cors());
 
+//datbase can be used across the server application
 app.use("*", async (c, next) => {
     c.set("database", db);
     await next();
@@ -47,7 +48,7 @@ app.use("*", async (c, next) => {
 
 app.post("/test", async (c) => {
     const token = await sign(
-        { user_id: 1, user_name: "para knas", ...expiresIn("1h") }, //no point in catch since i'll be using try-catch
+        { user_id: 1, user_name: "para knas", ...expiresIn("1min") }, //no point in catch since i'll be using try-catch
         process.env.SECRET!
     );
     setCookie(c, "__session", token, {
@@ -68,12 +69,14 @@ app.get("/test", cookieAuth, async (c) => {
     }
 });
 
-app.route("/api", login);
+//auth needed
 app.route("/api", save_recipe); //middleware här också
 app.route("/api", user_score); //lägg till middleware här
 app.route("/api", rate_recipe); //middleware här med
 app.route("/api", comment); //Lägg till middleware här när det är done
 
+//no auth needed
+app.route("/api", login);
 app.route("/api", register);
 app.route("/api", search);
 app.route("/api", recipe);

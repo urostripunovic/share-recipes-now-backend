@@ -210,13 +210,16 @@ These are the routes that will be roughly implemented some will be in steps whil
 
 ### Access user information
 
+### Login
+
+
 ### Creating seperate routes 
 honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read. There are a bunch of files but at least the code is no more readable and not a cluster f... 
 
-### Login
-
 ### Register user
-Very easy to implement only that that needed to be done was change the image file to a blob type. Small checks were done for when two users want to create a user with the same username or email there won't be a race condition on the frontend. I've also created a another api end point to check the usernames or emails while typing the form instead of having to submit the form and then get an error message saying that the email or username is already in use. I also forgot to ensure that only the right image types can be uploaded to the database imagine the dangers if I forgot...
+Very easy to implement ~~only that needed to be done was change the image file to a blob type.~~ and files are already Blobs since it's inherited. Small checks were done for when two users want to create a user with the same username/email or both and with this a race condition was prevented. I've also created a another api end point to check the usernames or emails while typing the form instead of having to submit the form for validation. I also forgot to ensure that only the right image types can be uploaded to the database, imagine the dangers if I forgot... And well I forgot a lot more like the server needs to act as the last line of defense so extra validation is needed. I didn't think of the security risks of people performing xss attacks or sql injections. better-sqlite3 protects against sql-injections by using prepare statements and I didn't implement anything against xss attacks because I figured that any framework will prevent it but I performed it using Insomnia so security measures were implemented like validation of files, usernames, emails and passwords as well as sanitation of strings to ensure no malicious code is added to the database.
+
+As we all know working with javascript requires one to install a thousand packages one of them being bcrypt for password hashing. Node has their own hashing algo called crypto but using that for password hashing isn't good, why? 'cos its to weak but using crypto for other things like api keys would be preferable and I might do just that for better security but I'm not sure that using bcrypt for hashing would be that necessary.
 
 ### Save recipe
 This one was easy as well but I also noticed that a user can save the same recipe multiple times which isn't optimal so I would need to update my Saved table to have unique constraint of (user_id, recipe_id). The next question becomes how would I remove the saved well it's the same as the rate recipe one, get if the user has saved the recipe and insert or delete if the user doesn't want to save it anymore, this though can't use UPSERT so two api end points are in order, maybe it's not but this seems to be the easiest way to do it.
