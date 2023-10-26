@@ -19,25 +19,25 @@ interface User {
     password: string;
 }
 
+//add a rate limit for brute force attacks
+/*login.use("/login", async (_, next) => {
+    console.log("hej funkar detta")
+    await next();
+})*/
+
 login.post("/login", async (c) => {
     const db = c.var.database;
     const { username, password } = await c.req.parseBody();
 
     try {
-        const user = db
-            .prepare(
-                "SELECT user_id, user_name, password FROM User WHERE user_name = ?"
-            )
-            .get(username) as User;
-
-        console.log(username, password, user?.password);
+        const user = db.prepare("SELECT user_id, user_name, password FROM User WHERE user_name = ?").get(username) as User;
+        //console.log(username, password, user?.password);
 
         if (!user?.password) {
             return c.json({ message: `${username} doesn't exist` }, 404);
         }
 
         const compare = await bcrypt.compare(password, user.password);
-
         if (!compare) {
             return c.json({ message: "Wrong password try again" });
         }

@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS Comments (
     timestamp TIMESTAMP,
     FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
-    UNIQUE (instruction_order, recipe_id)
+    UNIQUE (comment_id, recipe_id)
 );
 
 

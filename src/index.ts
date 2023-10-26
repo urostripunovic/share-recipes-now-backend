@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import path from "path";
+import {FileTypeResult, MimeType, fileTypeFromBuffer, fileTypeFromFile} from 'file-type';
 import Database, { Database as db } from "better-sqlite3";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
@@ -8,8 +9,8 @@ import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
-
 import { expiresIn } from "./utils/utils";
+
 import { ready_recipes } from "./routes/Ready Recipes";
 import { recipe } from "./routes/Recipe";
 import { search } from "./routes/Search";
@@ -19,6 +20,8 @@ import { user_score } from "./routes/User Score";
 import { save_recipe } from "./routes/Save Recipe";
 import { register } from "./routes/Register";
 import { login } from "./routes/Login";
+
+import { html, raw } from 'hono/html'
 
 dotenv.config();
 
@@ -44,6 +47,9 @@ app.use("*", async (c, next) => {
     await next();
 });
 
+//Lägg till att api key behövs för alla routes, en annan database så det blir en microservice typ
+//app.use("*")
+
 //app.use("/test/*", cookieAuth); //Whole route middleware
 
 app.post("/test", async (c) => {
@@ -67,6 +73,28 @@ app.get("/test", cookieAuth, async (c) => {
     } catch (error) {
         return c.json({ error: "Internal Server Error" }, 500);
     }
+});
+
+interface ProfileImage {
+    profile_image: ArrayBuffer
+}
+
+app.get("/render-test", async (c) => {
+    //try catch ofc
+    const { profile_image } = db.prepare("SELECT profile_image FROM User WHERE user_name = ?").get("test_user_5") as ProfileImage;
+    const b64 = Buffer?.from(profile_image).toString("base64");
+    const { mime } = await fileTypeFromBuffer(profile_image) as FileTypeResult;
+    //the package doesn't have all mimetypes so if something isn't png, webp, jpeg or gif change it to webp
+    let adjustedMime = mime;
+    if (!mime) {
+        adjustedMime = "image/webp";
+    }
+
+    return c.html(
+        html`
+          <h1>Hello! ${"username"}!</h1>
+          <img src="data:${adjustedMime};base64,${b64}" alt="Randy's balls"/>`
+    );
 });
 
 //auth needed

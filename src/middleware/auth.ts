@@ -11,6 +11,6 @@ export async function cookieAuth(c: any, next: any) {
         await next();
     } catch (error) {
         deleteCookie(c, "__session");
-        return c.json({ error: error.message.split(" ").pop() }, 403);
+        return c.json({ error: error.message }, 403);
     }
 }

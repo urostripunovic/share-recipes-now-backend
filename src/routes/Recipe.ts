@@ -15,11 +15,7 @@ recipe.get("recipe/:recipe_id", async (c) => {
         const recipe = db.transaction(() => {
             const recipe = getRecipe(db, id);
             //spara denna tills vidare kolla i recipeUtils efter några scores finns
-            const score = db
-                .prepare(
-                    `SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = ?`
-                )
-                .get(id);
+            const score = getScore(db, id);
             const recipe_ingredients = getRecipeIngredients(db, id);
             const instructions = getInstructions(db, id);
             const comments = getComments(db, id);
@@ -32,7 +28,7 @@ recipe.get("recipe/:recipe_id", async (c) => {
             };
         });
 
-        if (!recipe().recipe) return c.json({ message: "No recipe sorry" }, 404)
+        if (!recipe()?.recipe) return c.json({ message: "No recipe sorry" }, 404)
 
         return c.json(recipe(), 200);
     } catch (error) {
@@ -49,11 +45,10 @@ type Recipe = {
     difficulty: string;
     time: number;
     dish_image: string;
-    avg_score: number;
 };
 
 
-export function getRecipe(db: Database, id: string): Recipe {
+function getRecipe(db: Database, id: string): Recipe {
     return db
         .prepare( //, COUNT(U.user_id) AS votes
         `SELECT U.user_id, U.user_name, R.recipe_id, R.title, R.description, R.difficulty, R.time, R.dish_image
@@ -62,12 +57,25 @@ export function getRecipe(db: Database, id: string): Recipe {
         WHERE R.recipe_id = ?`).get(id) as Recipe;
 }
 
+type Score = {
+    avg_score: number;
+    votes: number;
+}
+
+function getScore(db: Database, id: string): Score {
+    return db
+    .prepare(
+        `SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = ?`
+    )
+    .get(id) as Score;
+}
+
 type RecipeIngredient = {
     ingredient_name: string;
     amount: string;
 };
 
-export function getRecipeIngredients(db: Database, id: string): RecipeIngredient[] {
+function getRecipeIngredients(db: Database, id: string): RecipeIngredient[] {
     return db
         .prepare(`
         SELECT I.name AS ingredient_name, RI.amount
@@ -82,7 +90,7 @@ type Instruction = {
     instruction: string;
 };
 
-export function getInstructions(db: Database, id: string): Instruction[] {
+function getInstructions(db: Database, id: string): Instruction[] {
     return db.prepare(`SELECT instruction_order, instruction FROM Instruction WHERE recipe_id = ?`).all(id) as Instruction[];
 }
 
@@ -95,7 +103,7 @@ type Comment = {
     path: string;
 };
 
-export function getComments(db: Database, id: string): Comment[] {
+function getComments(db: Database, id: string): Comment[] {
     const comment_hierarchy = db
         .prepare(
         `WITH RECURSIVE CommentHierarchy AS (

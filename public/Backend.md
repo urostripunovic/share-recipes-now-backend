@@ -188,11 +188,12 @@ These are the routes that will be roughly implemented some will be in steps whil
         Make sure to also when inserting that Ingredient query runs first and then RecipeIngredient query.
     - Instructions 
 - Retry all the routes that need a access token once the login is created
+- One for a user to view their user info, saved recipes, created recipes and comments **auth**
 - One to log in the user, access token and refresh tokens are set here
     - lite mer research här igen så implementationen funkar
-- One for a user to view their user info, saved recipes, created recipes and comments **auth**
 - One to create the user
-    - try rendering a image.
+    - try rendering a image. ✅
+    - add security ✅
     - ensure that images are of the right type. ✅
     - kolla om username redan finns samt att email redan också finns ✅
     - kolla om password är tillräckligt stark ✅
@@ -213,8 +214,15 @@ These are the routes that will be roughly implemented some will be in steps whil
 ### Login
 
 
-### Creating seperate routes 
-honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read. There are a bunch of files but at least the code is no more readable and not a cluster f... 
+### Creating separate routes + rendering images from buffers
+Honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read. There are a bunch of files but at least the code is no more readable and not a complete mess.
+
+Rendering the image as a buffer was so much harder to do 'cos I didn't actually read or understand what it was I sent into the database. What I'm sending in to a database is a buffer that only the computer can understand which is binary, I then need to translate that buffer so that the html can understand it as a string so that it renders properly, which can be done in a number of ways. Normally when working with images you need to pass in a url, be it a file path or an url image from a server, so the first approach was to pass in a url and how would one do that? Well you get the url from the window of [course](https://www.youtube.com/watch?v=Zt-Ql9ZE2XI), it didn't work 'cos I'm on a server... Yeah I'll leave it there. The next approach is to then instead send in a [data URI scheme](https://en.wikipedia.org/wiki/Data_URI_scheme), the syntax is simple:
+
+```html
+<img src="data:content/type;base64," alt="Randy's balls"/>
+```
+Don't ask, so first we tell the src that we have a url/uri of type data, next we need to specify what type of media type will be embedded on the browser here you can use what ever like `.png` or `.webp` doesn't matter but the general idea is to display the type. Then you tell it that the image is binary data and after the trailing comma you add the image as a base64 string! Also I didn't know how to get the mime type without forcing a webp compression but there is a npm package out there called [file-type](https://www.npmjs.com/package/file-type) so there is that.
 
 ### Register user
 Very easy to implement ~~only that needed to be done was change the image file to a blob type.~~ and files are already Blobs since it's inherited. Small checks were done for when two users want to create a user with the same username/email or both and with this a race condition was prevented. I've also created a another api end point to check the usernames or emails while typing the form instead of having to submit the form for validation. I also forgot to ensure that only the right image types can be uploaded to the database, imagine the dangers if I forgot... And well I forgot a lot more like the server needs to act as the last line of defense so extra validation is needed. I didn't think of the security risks of people performing xss attacks or sql injections. better-sqlite3 protects against sql-injections by using prepare statements and I didn't implement anything against xss attacks because I figured that any framework will prevent it but I performed it using Insomnia so security measures were implemented like validation of files, usernames, emails and passwords as well as sanitation of strings to ensure no malicious code is added to the database.
