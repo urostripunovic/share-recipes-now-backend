@@ -11,7 +11,7 @@ export async function processImage(profile_image: ArrayBuffer): Promise<String |
 
     const b64 = Buffer?.from(profile_image).toString("base64");
     const { mime } = await fileTypeFromBuffer(profile_image) as FileTypeResult;
-    //the package doesn't have all mimetypes so if something isn't png, webp, jpeg or gif change it to webp
+    //the package doesn't have all mime types so if something isn't png, webp, jpeg or gif change it to webp
     let adjustedMime = mime;
     if (!mime) {
         adjustedMime = "image/webp";

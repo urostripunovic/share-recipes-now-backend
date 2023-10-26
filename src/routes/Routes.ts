@@ -1,10 +1,10 @@
-import { ready_recipes } from "./Ready Recipes";
+import { ready_recipes } from "./ReadyRecipes";
 import { recipe } from "./Recipe";
 import { search } from "./Search";
 import { comment } from "./Comment";
-import { rate_recipe } from "./Rate Recipe";
-import { user_score } from "./User Score";
-import { save_recipe } from "./Save Recipe";
+import { rate_recipe } from "./RateRecipe";
+import { user_score } from "./UserScore";
+import { save_recipe } from "./SaveRecipe";
 import { register } from "./Register";
 import { login } from "./Login";
 

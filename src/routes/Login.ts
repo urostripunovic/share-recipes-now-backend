@@ -3,7 +3,7 @@ import { Database } from "better-sqlite3";
 import { sign } from "hono/jwt";
 import { setCookie } from "hono/cookie";
 import bcrypt from "bcrypt";
-import { expiresIn } from "../utils/utils";
+import { expiresIn } from "../utils/Utils";
 
 
 type Variables = {

@@ -9,7 +9,7 @@ import { setCookie } from "hono/cookie";
 import { sign } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
-import { expiresIn, processImage } from "./utils/utils";
+import { expiresIn, processImage } from "./utils/Utils";
 import {
     ready_recipes,
     recipe,
