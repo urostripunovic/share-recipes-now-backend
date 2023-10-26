@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import path from "path";
 import Database, { Database as db } from "better-sqlite3";
 import { Hono } from "hono";
+import { secureHeaders } from 'hono/secure-headers';
 import { serve } from "@hono/node-server";
 import { handle } from "@hono/node-server/vercel";
 import { setCookie } from "hono/cookie";
@@ -40,6 +41,7 @@ type Variables = {
 
 const app = new Hono<{ Variables: Variables }>();
 app.use(cors());
+app.use("*", secureHeaders());
 
 //datbase can be used across the server application
 app.use("*", async (c, next) => {
@@ -88,7 +90,7 @@ app.get("/render-test", async (c) => {
     );
 });
 
-//auth needed
+//auth needed make a route for all the auth ones, user centric route
 //Update recipe
 //Create recipe 
 //Create user information end point 
@@ -97,9 +99,11 @@ app.route("/api", user_score); //lägg till middleware här
 app.route("/api", rate_recipe); //middleware här med
 app.route("/api", comment); //Lägg till middleware här när det är done
 
-//no auth needed
+//user action routes
 app.route("/api", login);
 app.route("/api", register);
+
+//no auth needed make one head route for the ones that don't need a auth, non user centric route
 app.route("/api", search);
 app.route("/api", recipe);
 app.route("/api", ready_recipes);

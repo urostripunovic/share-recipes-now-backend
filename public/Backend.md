@@ -215,6 +215,8 @@ These are the routes that will be roughly implemented some will be in steps whil
 
 ### Login
 
+### Increased security
+I came across this reddit thread where someone asked if they could [roast their express server](https://www.reddit.com/r/node/comments/17eg2m5/roast_my_serverts_code_of_express_and_what_to/), api rate limit with redis, access and refresh token
 
 ### Creating separate routes + rendering images from buffers
 Honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read. There are a bunch of files but at least the code is no more readable and not a complete mess.
