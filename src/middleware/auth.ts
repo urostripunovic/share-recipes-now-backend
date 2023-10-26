@@ -3,11 +3,12 @@ import { getCookie, deleteCookie } from "hono/cookie";
 import { verify } from "hono/jwt";
 
 export async function cookieAuth(c: Context, next: Next) {
-    const token = getCookie(c, "__session");
-    if (!token) return c.json({ message: "No token found" }, 404);
-
+    const refresh_token = getCookie(c, "__session");
+    if (!refresh_token) return c.json({ message: "No token found" }, 404);
+    
+    const access_token = ""; //hämta från databasen
     try {
-        const user = await verify(token, process.env.SECRET!);
+        const user = await verify(refresh_token, process.env.SECRET!);
         c.set("user", user);
         await next();
     } catch (error) {
