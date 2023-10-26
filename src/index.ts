@@ -40,8 +40,14 @@ type Variables = {
 };
 
 const app = new Hono<{ Variables: Variables }>();
-app.use(cors());
-app.use("*", secureHeaders());
+app.use("*",cors({ //SITE is the frontend website and localhost is the vite dev server
+    origin: process.env.SITE! || "http://localhost:5173",
+    credentials: true,
+}));
+
+app.use("*",secureHeaders({
+    xXssProtection: false,
+}));
 
 //datbase can be used across the server application
 app.use("*", async (c, next) => {
@@ -65,7 +71,7 @@ app.post("/test", async (c) => {
         path: "/",
     });
 
-    return c.json({ msg: "user logged in", token }, 200);
+    return c.json({ msg: "User logged in", token }, 200);
 });
 
 app.get("/test", cookieAuth, async (c) => {
@@ -115,4 +121,4 @@ serve({
 });
 console.log(`Running at http://localhost:${port}`);
 
-export default app;
+export default handle(app);

@@ -1,9 +1,10 @@
 # share-recipes-now-backend
 Backend for the share-recipes-now. Tech stack used is [Node.js](https://nodejs.org/en) together with the [Hono.js framework](https://hono.dev/). The database in use is [SQLite](https://www.sqlite.org/index.html). This backend supports complete CRUD operations when it comes to create users, recipes, comments, update them, delete them as well as read them. There will be documentation for how the database was formed, created and tested as well as documentation how the Node.js backend server is set up along with an explanation for each REST API end point.
 ## TODO
+- [ ] Once it's done deploy it to vercel with [Hono's tutorial](https://hono.dev/getting-started/vercel)
 - [ ] Try creating the recipe page in the backend with [Hono html helper](https://hono.dev/helpers/html) and [HTMX](https://htmx.org/)
 - [ ] Rebuild the database and insert ingredients into it.
-    - Scrap a website for a bunch of ingredients 
+    - Scrap a website for a bunch of ingredients, save it as a json file and run it once when a fresh db is added
 - [ ] Look into how update would work together with backend (UPDATE).
 - [ ] Start setting up CRUD operation as well as unit tests.
 - [ ] API routes

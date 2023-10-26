@@ -29,11 +29,15 @@ recipe.get("recipe/:recipe_id", async (c) => {
             };
         });
 
-        if (!(await recipe())?.recipe) return c.json({ message: "No recipe sorry" }, 404)
+        if (!(await recipe())?.recipe)
+            return c.json({ message: "No recipe sorry" }, 404);
 
         return c.json(await recipe(), 200);
     } catch (error) {
-        return c.json({ error }, 500);
+        return c.json(
+            { error: `No recipe with id: ${id} in the database` },
+            500
+        );
     }
 });
 
@@ -48,16 +52,18 @@ type Recipe = {
     dish_image: ArrayBuffer | String | undefined;
 };
 
-
 async function getRecipe(db: Database, id: string): Promise<Recipe> {
     const recipe = db
-        .prepare( //, COUNT(U.user_id) AS votes
-        `SELECT U.user_id, U.user_name, R.recipe_id, R.title, R.description, R.difficulty, R.time, R.dish_image
+        .prepare(
+            //, COUNT(U.user_id) AS votes
+            `SELECT U.user_id, U.user_name, R.recipe_id, R.title, R.description, R.difficulty, R.time, R.dish_image
         FROM User U
         JOIN Recipe R ON U.user_id = R.user_id
-        WHERE R.recipe_id = ?`).get(id) as Recipe;
+        WHERE R.recipe_id = ?`
+        )
+        .get(id) as Recipe;
 
-        recipe.dish_image = await processImage(recipe.dish_image as ArrayBuffer);
+    recipe.dish_image = await processImage(recipe.dish_image as ArrayBuffer);
 
     return recipe;
 }
@@ -65,14 +71,14 @@ async function getRecipe(db: Database, id: string): Promise<Recipe> {
 type Score = {
     avg_score: number;
     votes: number;
-}
+};
 
 function getScore(db: Database, id: string): Score {
     return db
-    .prepare(
-        `SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = ?`
-    )
-    .get(id) as Score;
+        .prepare(
+            `SELECT ROUND(AVG(score), 2) AS avg_score, COUNT(user_id) AS votes FROM Score WHERE recipe_id = ?`
+        )
+        .get(id) as Score;
 }
 
 type RecipeIngredient = {
@@ -82,11 +88,13 @@ type RecipeIngredient = {
 
 function getRecipeIngredients(db: Database, id: string): RecipeIngredient[] {
     return db
-        .prepare(`
+        .prepare(
+            `
         SELECT I.name AS ingredient_name, RI.amount
         FROM RecipeIngredient RI
         JOIN Ingredient I ON RI.ingredient_id = I.ingredient_id
-        WHERE RI.recipe_id = ?`)
+        WHERE RI.recipe_id = ?`
+        )
         .all(id) as RecipeIngredient[];
 }
 
@@ -96,7 +104,11 @@ type Instruction = {
 };
 
 function getInstructions(db: Database, id: string): Instruction[] {
-    return db.prepare(`SELECT instruction_order, instruction FROM Instruction WHERE recipe_id = ?`).all(id) as Instruction[];
+    return db
+        .prepare(
+            `SELECT instruction_order, instruction FROM Instruction WHERE recipe_id = ?`
+        )
+        .all(id) as Instruction[];
 }
 
 type Comment = {
@@ -111,16 +123,18 @@ type Comment = {
 function getComments(db: Database, id: string): Comment[] {
     const comment_hierarchy = db
         .prepare(
-        `WITH RECURSIVE CommentHierarchy AS (
-        SELECT comment_id, user_id, message, parent_id, '' AS path
-        FROM Comments WHERE recipe_id = ? AND parent_id IS NULL
-        UNION ALL
-        SELECT c.comment_id, c.user_id, c.message, c.parent_id, ch.path || '/' || c.parent_id AS path
-        FROM CommentHierarchy AS ch
-        JOIN Comments AS c
-        ON c.parent_id = ch.comment_id)
-        SELECT ch.path, ch.comment_id, ch.message, ch.user_id, u.user_name
-        FROM CommentHierarchy ch JOIN User u ON ch.user_id = u.user_id`).all(id) as Comment[];
+            `WITH RECURSIVE CommentHierarchy AS (
+            SELECT comment_id, user_id, message, parent_id, '' AS path
+            FROM Comments WHERE recipe_id = ? AND parent_id IS NULL
+            UNION ALL
+            SELECT c.comment_id, c.user_id, c.message, c.parent_id, ch.path || '/' || c.parent_id AS path
+            FROM CommentHierarchy AS ch
+            JOIN Comments AS c
+            ON c.parent_id = ch.comment_id)
+            SELECT ch.path, ch.comment_id, ch.message, ch.user_id, u.user_name
+            FROM CommentHierarchy ch JOIN User u ON ch.user_id = u.user_id`
+        )
+        .all(id) as Comment[];
 
     return comment_hierarchy;
 }
