@@ -175,6 +175,7 @@ UX would look something like this:
 
 
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
+- Implement api key as well.
 - Implement the api.ts file or not see how easy it is.
 - Implement a rate limit for login, there is a [npm package for it using redis](https://github.com/upstash/ratelimit#install)
 - Redo the processImage function when fetching recipes and user information
