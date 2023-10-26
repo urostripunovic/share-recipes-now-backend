@@ -1,27 +1,27 @@
 import dotenv from "dotenv";
 import path from "path";
-import {FileTypeResult, MimeType, fileTypeFromBuffer, fileTypeFromFile} from 'file-type';
 import Database, { Database as db } from "better-sqlite3";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { handle } from "@hono/node-server/vercel";
-import { getCookie, setCookie, deleteCookie } from "hono/cookie";
-import { sign, verify } from "hono/jwt";
+import { setCookie } from "hono/cookie";
+import { sign } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
-import { expiresIn } from "./utils/utils";
+import { expiresIn, processImage } from "./utils/utils";
+import {
+    ready_recipes,
+    recipe,
+    search,
+    comment,
+    rate_recipe,
+    user_score,
+    save_recipe,
+    register,
+    login,
+} from "./routes/Routes";
 
-import { ready_recipes } from "./routes/Ready Recipes";
-import { recipe } from "./routes/Recipe";
-import { search } from "./routes/Search";
-import { comment } from "./routes/Comment";
-import { rate_recipe } from "./routes/Rate Recipe";
-import { user_score } from "./routes/User Score";
-import { save_recipe } from "./routes/Save Recipe";
-import { register } from "./routes/Register";
-import { login } from "./routes/Login";
-
-import { html, raw } from 'hono/html'
+import { html, raw } from "hono/html";
 
 dotenv.config();
 
@@ -80,24 +80,18 @@ interface ProfileImage {
 }
 
 app.get("/render-test", async (c) => {
-    //try catch ofc
     const { profile_image } = db.prepare("SELECT profile_image FROM User WHERE user_name = ?").get("test_user_5") as ProfileImage;
-    const b64 = Buffer?.from(profile_image).toString("base64");
-    const { mime } = await fileTypeFromBuffer(profile_image) as FileTypeResult;
-    //the package doesn't have all mimetypes so if something isn't png, webp, jpeg or gif change it to webp
-    let adjustedMime = mime;
-    if (!mime) {
-        adjustedMime = "image/webp";
-    }
-
+    const dataURI = await processImage(profile_image);
     return c.html(
-        html`
-          <h1>Hello! ${"username"}!</h1>
-          <img src="data:${adjustedMime};base64,${b64}" alt="Randy's balls"/>`
+        html` <h1>Hello! ${"username"}!</h1>
+            <img src="${dataURI}" alt="Randy's balls" />`
     );
 });
 
 //auth needed
+//Update recipe
+//Create recipe 
+//Create user information end point 
 app.route("/api", save_recipe); //middleware här också
 app.route("/api", user_score); //lägg till middleware här
 app.route("/api", rate_recipe); //middleware här med

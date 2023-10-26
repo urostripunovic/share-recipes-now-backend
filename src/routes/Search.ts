@@ -1,13 +1,23 @@
 import { Hono } from "hono";
 import { Database } from "better-sqlite3";
+import { processImage } from "../utils/process image";
 
 type Variables = {
     database: Database;
 };
 
+type Recipe = {
+    user_id: number;
+    user_name: string;
+    recipe_id: number;
+    title: string;
+    time: number;
+    dish_image: ArrayBuffer | String | undefined;
+};
+
 export const search = new Hono<{ Variables: Variables }>();
 
-search.get("/search-recipe", (c) => {
+search.get("/search-recipe", async (c) => {
     const db = c.var.database;
     //?q=pasta&search_term=recipes
     const { q, search_term } = c.req.query();
@@ -24,8 +34,12 @@ search.get("/search-recipe", (c) => {
             WHERE ${search} LIKE ?
             GROUP BY R.recipe_id;`
             )
-            .all(`%${q.trim()}%`);
-
+            .all(`%${q.trim()}%`) as Recipe[];
+        
+        for (const recipe of recipes) {
+            recipe.dish_image = await processImage(recipe.dish_image as ArrayBuffer);
+        }
+        
         const results = recipes.length;
         return c.json({ recipes, results }, 200);
     } catch (error) {

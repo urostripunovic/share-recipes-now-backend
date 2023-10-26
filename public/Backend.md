@@ -177,6 +177,7 @@ UX would look something like this:
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
 - Implement the api.ts file or not see how easy it is.
 - Implement a rate limit for login, there is a [npm package for it using redis](https://github.com/upstash/ratelimit#install)
+- Redo the processImage function when fetching recipes and user information
 - Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe, test it out as well
 - One to let users add a ingredient **admin auth?**
     - Scrape all the ingredients from this [site](https://food.ndtv.com/ingredient) and att it to the Ingredient Table
@@ -191,7 +192,7 @@ These are the routes that will be roughly implemented some will be in steps whil
 - One for a user to view their user info, saved recipes, created recipes and comments **auth**
 - One to log in the user, access token and refresh tokens are set here
     - lite mer research här igen så implementationen funkar
-- One to create the user
+- One to create the user ✅
     - try rendering a image. ✅
     - add security ✅
     - ensure that images are of the right type. ✅
@@ -222,7 +223,7 @@ Rendering the image as a buffer was so much harder to do 'cos I didn't actually 
 ```html
 <img src="data:content/type;base64," alt="Randy's balls"/>
 ```
-Don't ask, so first we tell the src that we have a url/uri of type data, next we need to specify what type of media type will be embedded on the browser here you can use what ever like `.png` or `.webp` doesn't matter but the general idea is to display the type. Then you tell it that the image is binary data and after the trailing comma you add the image as a base64 string! Also I didn't know how to get the mime type without forcing a webp compression but there is a npm package out there called [file-type](https://www.npmjs.com/package/file-type) so there is that.
+Don't ask, so first we tell the src that we have a url/uri of type data, next we need to specify what type of media type will be embedded on the browser here you can use what ever like `.png` or `.webp` doesn't matter but the general idea is to display the type. Then you tell it that the image is binary data and after the trailing comma you add the image as a base64 string! Also I didn't know how to get the mime type without forcing a webp compression but there is a npm package out there called [file-type](https://www.npmjs.com/package/file-type) so there is that. Ngl I actually wanted to create my own file-type reader for files like `.pjp` and other weird ones but instead I'll just reprocess them as webp even though there will be a loss in quality. But the general idea is to process the image on the server by bringing less javascript to the browser, there might also be some server side rendered html as well to lessen the javascript even more.
 
 ### Register user
 Very easy to implement ~~only that needed to be done was change the image file to a blob type.~~ and files are already Blobs since it's inherited. Small checks were done for when two users want to create a user with the same username/email or both and with this a race condition was prevented. I've also created a another api end point to check the usernames or emails while typing the form instead of having to submit the form for validation. I also forgot to ensure that only the right image types can be uploaded to the database, imagine the dangers if I forgot... And well I forgot a lot more like the server needs to act as the last line of defense so extra validation is needed. I didn't think of the security risks of people performing xss attacks or sql injections. better-sqlite3 protects against sql-injections by using prepare statements and I didn't implement anything against xss attacks because I figured that any framework will prevent it but I performed it using Insomnia so security measures were implemented like validation of files, usernames, emails and passwords as well as sanitation of strings to ensure no malicious code is added to the database.

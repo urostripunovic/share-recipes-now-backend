@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { Database } from "better-sqlite3";
+import { processImage } from "../utils/process image";
 
 type Variables = {
     database: Database;
@@ -7,10 +8,10 @@ type Variables = {
 
 export const ready_recipes = new Hono<{ Variables: Variables }>();
 
-ready_recipes.get("/fast-food", (c) => {
+ready_recipes.get("/fast-food", async (c) => {
     
     try {
-        const json = fastOrRatedFood(c.var.database);
+        const json = await fastOrRatedFood(c.var.database);
         return c.json(json, 200);
     } catch (error) {
         return c.json({ error }, 500);
@@ -19,7 +20,7 @@ ready_recipes.get("/fast-food", (c) => {
 
 ready_recipes.get("/top-rated-food", async (c) => {
     try {
-        const json = fastOrRatedFood(c.var.database, true);
+        const json = await fastOrRatedFood(c.var.database, true);
         return c.json(json, 200);
     } catch (error) {
         return c.json({ error }, 500);
@@ -34,7 +35,7 @@ type Recipe = {
     description: string;
     difficulty: string;
     time: number;
-    dish_image: string;
+    dish_image: ArrayBuffer | String | undefined;
     avg_score: number;
 };
 
@@ -46,9 +47,9 @@ type Recipe = {
  * @returns {Recipe[]} - An array of recipe objects.
  * @throws {Error} If there's an error during the database query.
  */
-export function fastOrRatedFood(db: Database): Recipe[];
-export function fastOrRatedFood(db: Database, score: boolean): Recipe[];
-export function fastOrRatedFood(db: Database, score?: boolean): Recipe[] {
+export async function fastOrRatedFood(db: Database): Promise<Recipe[]>;
+export async function fastOrRatedFood(db: Database, score: boolean): Promise<Recipe[]>;
+export async function fastOrRatedFood(db: Database, score?: boolean): Promise<Recipe[]> {
     const part_of_query = score ? "avg_score >= 4.2" : "R.time < 30";
 
     try {
@@ -61,8 +62,13 @@ export function fastOrRatedFood(db: Database, score?: boolean): Recipe[] {
             GROUP BY R.recipe_id
             HAVING ${part_of_query}`
             )
-            .all();
-        return json as Recipe[];
+            .all() as Recipe[];
+        
+        for(const recipe of json) {
+            recipe.dish_image = await processImage(recipe.dish_image as ArrayBuffer);
+        }
+
+        return json;
     } catch (error) {
         throw new Error("An error occurred while querying the database.");
     }
