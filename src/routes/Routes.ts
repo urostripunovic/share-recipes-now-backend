@@ -7,15 +7,22 @@ import { user_score } from "./UserScore";
 import { save_recipe } from "./SaveRecipe";
 import { register } from "./Register";
 import { login } from "./Login";
+import { refresh } from "./refreshToken";
+import { Hono } from "hono";
 
-export {
-    ready_recipes,
-    recipe,
-    search,
-    comment,
-    rate_recipe,
-    user_score,
-    save_recipe,
-    register,
-    login,
-};
+export const nonAuth = new Hono();
+nonAuth.route("/", refresh);
+nonAuth.route("/", ready_recipes);
+nonAuth.route("/", recipe);
+nonAuth.route("/", search);
+
+export const action = new Hono();
+action.route("/", login);
+action.route("/", register);
+//logout route
+
+export const userAction = new Hono();
+userAction.route("/", save_recipe);
+userAction.route("/", user_score); 
+userAction.route("/", rate_recipe); 
+userAction.route("/", comment); 

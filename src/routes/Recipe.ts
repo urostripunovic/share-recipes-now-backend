@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { Database } from "better-sqlite3";
-import { processImage } from "../utils/Utils";
+import { processImage } from "../utils/utils";
 
 type Variables = {
     database: Database;

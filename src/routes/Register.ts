@@ -5,7 +5,7 @@ import {
     validateString,
     validateFileType,
     validatePassword,
-} from "../utils/Utils";
+} from "../utils/utils";
 
 const salt = bcrypt.genSaltSync(10);
 

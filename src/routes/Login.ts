@@ -1,15 +1,13 @@
 import { Hono } from "hono";
 import { Database } from "better-sqlite3";
 import { sign } from "hono/jwt";
-import { setCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import bcrypt from "bcrypt";
-import { expiresIn } from "../utils/Utils";
-
+import { expiresIn } from "../utils/utils";
 
 type Variables = {
     database: Database;
 };
-
 
 export const login = new Hono<{ Variables: Variables }>();
 
@@ -26,11 +24,16 @@ interface User {
 })*/
 
 login.post("/login", async (c) => {
+    const refreshToken = getCookie(c, "refreshToken");
     const db = c.var.database;
     const { username, password } = await c.req.parseBody();
 
     try {
-        const user = db.prepare("SELECT user_id, user_name, password FROM User WHERE user_name = ?").get(username) as User;
+        const user = db
+            .prepare(
+                "SELECT user_id, user_name, password FROM User WHERE user_name = ?"
+            )
+            .get(username) as User;
         //console.log(username, password, user?.password);
 
         if (!user?.password) {
@@ -42,24 +45,51 @@ login.post("/login", async (c) => {
             return c.json({ message: "Wrong password try again" });
         }
 
-        const token = await sign(
+        //This one is used on the browser for access
+        const accessToken = await sign(
             {
                 user_id: user?.user_id,
                 user_name: user?.user_name,
-                ...expiresIn("1h"),
+                ...expiresIn(10), //"15min"
             },
-            process.env.SECRET!
+            process.env.ACCESS_TOKEN_SECRET!
         );
 
-        setCookie(c, "__session", token, {
+        setCookie(c, "accessToken", accessToken, {
             httpOnly: true,
             secure: true,
+            sameSite: "None",
+            maxAge: 24 * 60 * 60 * 1000,
             path: "/",
         });
+
+        //This one is sent to the database for each browser
+        const newRefreshToken = await sign(
+            {
+                user_id: user?.user_id,
+                user_name: user?.user_name,
+                ...expiresIn(10), //4days
+            },
+            process.env.REFRESH_TOKEN_SECRET!
+        );
+
+        if (refreshToken) {
+            c.var.database.prepare("DELETE FROM Session WHERE refresh_token = ?").run(refreshToken);
+            deleteCookie(c, "refreshToken");
+        }
+
+        setCookie(c, "refreshToken", newRefreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            maxAge: 24 * 60 * 60 * 1000,
+            path: "/",
+        });
+
+        db.prepare("INSERT OR IGNORE INTO Session (user_id, refresh_token) VALUES (?, ?)").run(user?.user_id, newRefreshToken);
 
         return c.json({ message: "Login successful" }, 200);
     } catch (error) {
         return c.json({ error });
     }
 });
-

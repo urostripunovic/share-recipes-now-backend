@@ -1,6 +1,6 @@
-import { expiresIn } from "./JwtExpires";
-import { processImage } from "./ProcessImage";
-import { validateString, validateFileType, validatePassword } from "./Validate";
+import { expiresIn } from "./jwtExpires";
+import { processImage } from "./processImage";
+import { validateString, validateFileType, validatePassword } from "./validate";
 
 
 export {

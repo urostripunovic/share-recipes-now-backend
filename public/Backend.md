@@ -52,7 +52,7 @@ fetch("some url", {
 app.use(
     "/api/*",
     jwt({
-        secret: process.env.SECRET,
+        secret: process.env.ACCESS_TOKEN_SECRET,
     })
 );
 
@@ -66,7 +66,7 @@ I got this example to work with Insomnia but not the other two, Some more testin
 
 ```JS
 app.post("/test", async (c) => {
-    const token = await sign({ user_name: "para knas" }, process.env.SECRET);
+    const token = await sign({ user_name: "para knas" }, process.env.ACCESS_TOKEN_SECRET);
 
     setCookie(c, "token", token, {
         httpOnly: true,
@@ -81,7 +81,7 @@ app.get("/test", async (c) => {
 
     if (!token) return c.json({ msg: "unauthorized" }, 401);
 
-    const { user_name } = await verify(token, process.env.SECRET);
+    const { user_name } = await verify(token, process.env.ACCESS_TOKEN_SECRET);
 
     return c.json({ user_name }, 200);
 });
@@ -94,7 +94,7 @@ app.use("/test/*", async (c, next) => {
     if (!token) return c.json({ message: "No token found" }, 404);
 
     try {
-        const json = await verify(token, process.env.SECRET);
+        const json = await verify(token, process.env.ACCESS_TOKEN_SECRET);
         c.set('user', json)
         await next();
     } catch (error) {
@@ -105,12 +105,12 @@ app.use("/test/*", async (c, next) => {
 ```
 This is the middleware it worked for everything in this route and since I'm using TypeScript it won't like `c.req.user` since it doesn't exist in Hono, maybe they have a better way of doing this I don't know but if they do I'll update my code accordingly. But this is the wildcard approach and as we established using `credentials` and `withCredentials` can pose some issues and I need to make sure that the route that gives out a cookie isn't under that authed route. I also wrote the middleware as a function as well if I wanted to add them to only specified CRUD routes:
 ```js
-async function cookieAuth(c, next) {
+async function cookieAuth(c: Context, next: Next) {
     const token = getCookie(c, "token");
     if (!token) return c.json({ message: "No token found" }, 404);
 
     try {
-        const json = await verify(token, process.env.SECRET);
+        const json = await verify(token, process.env.ACCESS_TOKEN_SECRET);
         c.set('user', json)
         await next();
     } catch (error) {
@@ -139,7 +139,7 @@ const exp = iat + 1; //increase the amount of x seconds, x*60 minutes, x*60*60 h
 
 const token = await sign(
     { user_id: 1, user_name: "para knas", iat, exp },
-    process.env.SECRET
+    process.env.ACCESS_TOKEN_SECRET
 );
 ```
 There is not need to download the jsonwebtoken npm package but I'm not gonna lie the DX was a lot better with the package. The with this code I should be able to implement access and refresh tokens but with no database there's nothing to test. I'll either try and implement this once the db is up an running on once the project is done, but we all know from how I've done things so far, I'll most likely do it. [And my future employer would be impressed with the attention to detail](https://tenor.com/sv/view/wink-wink-nudge-nudge-monty-python-wink-signal-gif-5500109). You know what... [I implemented my own `expiresIn`](https://github.com/urostripunovic/share-recipes-now-backend/blob/main/src/utils/jwtExpires.ts), LOL, it's not as good as the npm package but good enough for me since I won't need to rewrite the exp variable constantly. Why did I do it? Well I was watching Asoka, the first 10s and then I thought of just solving this 'cos I honestly wanted an expiresIn, [I became the meme I was laughing at a couple of weeks ago...](https://miro.medium.com/v2/resize:fit:720/format:webp/1*6Oyig2ACF-unC3R-CXT8jw.jpeg). 
@@ -191,25 +191,7 @@ These are the routes that will be roughly implemented some will be in steps whil
     - Instructions 
 - Retry all the routes that need a access token once the login is created
 - One for a user to view their user info, saved recipes, created recipes and comments **auth**
-- One to log in the user, access token and refresh tokens are set here
-    - lite mer research här igen så implementationen funkar
-- One to create the user ✅
-    - try rendering a image. ✅
-    - add security ✅
-    - ensure that images are of the right type. ✅
-    - kolla om username redan finns samt att email redan också finns ✅
-    - kolla om password är tillräckligt stark ✅
-    - kolla även hur man skall lägga till en bild, allt i ett? ✅
-- One to save the recipes **auth** ✅
-    - get saved, post saved, delete saved ✅
-    - Fix the saved recipe as well so that one can only save one recipe and not multiple ✅
-- One to get user score **auth** ✅
-- One to rate the recipes **auth** ✅
-- One for users to add a comment to a recipe **auth** ✅
-- One to search the recipes by ingredient or title ✅
-- One to view the recipe and its comments ✅
-- One for top recipes ✅
-- One for recipes within a time frame ✅
+- One to log users out of the session.
 
 ### Access user information
 
@@ -217,7 +199,7 @@ These are the routes that will be roughly implemented some will be in steps whil
 I came across this reddit thread where someone asked if they could [roast their express server](https://www.reddit.com/r/node/comments/17eg2m5/roast_my_serverts_code_of_express_and_what_to/), api rate limit with redis, access and refresh token
 
 ### Login
-
+Not gonna lie having to perform some good security checks when working with jwt and cookies was a lot harder than I expected. For starters you need a access token that is short lived and than a refresh token that isn't. The refresh token is stored both on the browser and the database, on the browser it's http only and in the database it's not... The access token is stored in the browser but the more you read about access token the more confusing it gets, it stored on the browser and it might or might not be okay for it to be accessed via JavaScript, so which is it? Idk really but I think having it be httpOnly is the best course of action and more secure that way. The implementation of rotation tokens wasn't that hard to do, it required some thought put into it, like if they have a forged token with a user_id it is best to delete the tokens related to that user, the next step would be to then issue out new access tokens each time they expire, for security reasons you know, and while we're at it it's also better to then rotate the refresh tokens for even more security so the only times a refresh token expires is if the user hasn't been logged in for a while. This doesn't eliminate the security risks but it does mitigate them a lot more.
 
 ### Creating separate routes + rendering images from buffers
 Honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read. There are a bunch of files but at least the code is no more readable and not a complete mess.
