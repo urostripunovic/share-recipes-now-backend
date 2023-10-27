@@ -73,11 +73,18 @@ login.post("/login", async (c) => {
             process.env.REFRESH_TOKEN_SECRET!
         );
 
-        if (refreshToken) {
-            c.var.database.prepare("DELETE FROM Session WHERE refresh_token = ?").run(refreshToken);
-            deleteCookie(c, "refreshToken");
-        }
+        const userToken = c.var.database
+            .prepare("SELECT user_id, refresh_token FROM Session WHERE refresh_token = ?")
+            .get(refreshToken) as any;
 
+        //User doesn't log out and the cookie is stolen
+        if (!userToken?.refresh_token) {
+            c.var.database
+                .prepare("DELETE FROM Session WHERE refresh_token = ?")
+                .run(refreshToken);
+        }
+        deleteCookie(c, "refreshToken");
+            
         setCookie(c, "refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: true,
@@ -86,7 +93,9 @@ login.post("/login", async (c) => {
             path: "/",
         });
 
-        db.prepare("INSERT OR IGNORE INTO Session (user_id, refresh_token) VALUES (?, ?)").run(user?.user_id, newRefreshToken);
+        db.prepare(
+            "INSERT OR IGNORE INTO Session (user_id, refresh_token) VALUES (?, ?)"
+        ).run(user?.user_id, newRefreshToken);
 
         return c.json({ message: "Login successful" }, 200);
     } catch (error) {
