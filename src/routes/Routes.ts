@@ -10,15 +10,15 @@ import { login } from "./Login";
 import { refresh } from "./refreshToken";
 import { Hono } from "hono";
 
-export const nonAuth = new Hono();
-nonAuth.route("/", refresh);
-nonAuth.route("/", ready_recipes);
-nonAuth.route("/", recipe);
-nonAuth.route("/", search);
+export const recipes = new Hono();
+recipes.route("/", ready_recipes);
+recipes.route("/", recipe);
+recipes.route("/", search);
 
-export const action = new Hono();
-action.route("/", login);
-action.route("/", register);
+export const authTheUser = new Hono();
+authTheUser.route("/", refresh);
+authTheUser.route("/", login);
+authTheUser.route("/", register);
 //logout route
 
 export const userAction = new Hono();

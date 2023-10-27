@@ -10,7 +10,7 @@ import { sign } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
 import { expiresIn, processImage } from "./utils/utils";
-import { nonAuth, action, userAction } from "./routes/Routes";
+import { recipes, authTheUser, userAction } from "./routes/Routes";
 
 import { html, raw } from "hono/html";
 
@@ -91,16 +91,16 @@ app.get("/render-test", async (c) => {
     );
 });
 
-//user action routes
-app.route("/", action);
+//authenticate the user
+app.route("/", authTheUser);
 //no auth needed make one head route for the ones that don't need a auth, non user centric route
-app.route("/", nonAuth);
+app.route("/", recipes);
 
 //auth needed make a route for all the auth ones, user centric route
 //Update recipe
 //Create recipe
 //Create user information end point
-app.use("/api/*", cookieAuth);
+//app.use("/api/*", cookieAuth);
 app.route("/api", userAction); //Lägg till middleware här när det är done
 
 const port = parseInt(process.env.PORT!) || 3000;
