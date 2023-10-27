@@ -50,7 +50,7 @@ login.post("/login", async (c) => {
             {
                 user_id: user?.user_id,
                 user_name: user?.user_name,
-                ...expiresIn(10), //"15min"
+                ...expiresIn("15min"), //"15min"
             },
             process.env.ACCESS_TOKEN_SECRET!
         );
@@ -68,7 +68,7 @@ login.post("/login", async (c) => {
             {
                 user_id: user?.user_id,
                 user_name: user?.user_name,
-                ...expiresIn(10), //4days
+                ...expiresIn("4days"), //4days
             },
             process.env.REFRESH_TOKEN_SECRET!
         );

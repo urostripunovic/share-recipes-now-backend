@@ -57,7 +57,7 @@ refresh.get("/refresh", async (c) => {
             {
                 user_id,
                 user_name,
-                ...expiresIn(10), //"15min"
+                ...expiresIn("15min"), //"15min"
             },
             process.env.ACCESS_TOKEN_SECRET!
         );
@@ -74,7 +74,7 @@ refresh.get("/refresh", async (c) => {
             {
                 user_id,
                 user_name,
-                ...expiresIn(30), //"15min"
+                ...expiresIn("4days"), //"15min"
             },
             process.env.REFRESH_TOKEN_SECRET!
         );
