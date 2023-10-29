@@ -18,7 +18,7 @@ export const refresh = new Hono<{ Variables: Variables }>();
 refresh.get("/refresh", async (c) => {
     const refreshToken = getCookie(c, "refreshToken");
     if (!refreshToken)
-        return c.json({ message: "No token found, please log in again" }, 401);
+        return c.json({ message: "No token found, please log in again" }, 401); //ny refresh token krävs
     deleteCookie(c, "refreshToken");
     
     const sessionInfo = c.var.database
@@ -83,7 +83,7 @@ refresh.get("/refresh", async (c) => {
             httpOnly: true,
             secure: true,
             sameSite: "None",
-            maxAge: 4 * 60 * 60 * 1000,
+            maxAge: 4 * 24 * 60 * 60 * 1000,
             path: "/",
         });
 

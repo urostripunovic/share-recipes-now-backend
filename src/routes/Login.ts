@@ -50,7 +50,7 @@ login.post("/login", async (c) => {
             {
                 user_id: user?.user_id,
                 user_name: user?.user_name,
-                ...expiresIn("15min"), //"15min"
+                ...expiresIn(1), //"15min"
             },
             process.env.ACCESS_TOKEN_SECRET!
         );
@@ -59,7 +59,7 @@ login.post("/login", async (c) => {
             httpOnly: true,
             secure: true,
             sameSite: "None",
-            maxAge: 24 * 60 * 60 * 1000,
+            maxAge: 15 * 60 * 1000,
             path: "/",
         });
 
@@ -89,7 +89,7 @@ login.post("/login", async (c) => {
             httpOnly: true,
             secure: true,
             sameSite: "None",
-            maxAge: 24 * 60 * 60 * 1000,
+            maxAge:  4 * 24 * 60 * 60 * 1000,
             path: "/",
         });
 
