@@ -46,19 +46,19 @@ register.post("/register/", async (c) => {
     //Check if user name exists + sanitize
     const safeUsername = validateString(user_name as string);
     if (checkExistence(db, { key: "user_name", value: safeUsername })) {
-        return c.json({ message: `${user_name} already exists` });
+        return c.json({ message: `${user_name} already exists` }, 406);
     }
 
     //Check if email is already in use + sanitize
     const safeEmail = validateString(email as string);
     if (checkExistence(db, { key: "email", value: safeEmail })) {
-        return c.json({ message: `${email} is already in use` });
+        return c.json({ message: `${email} is already in use` }, 406);
     }
 
     //sanitation and password validation again.
     const safePassword = validateString(password as string);
     if (!validatePassword(safePassword)) {
-        return c.json({ message: "Password is to weak" });
+        return c.json({ message: "Password is to weak" }, 406);
     }
     //Salt and has password
     const pass_word: string = await bcrypt.hash(safePassword, salt);
@@ -69,6 +69,14 @@ register.post("/register/", async (c) => {
     }
     const profile_image = await convertImageToBuffer(image as File);
     //console.log(profile_image)
+
+    //Check if email and username have the correct regex
+    const user_name_regex = /^(?=[a-zA-Z0-9._]{3,16}$)(?!.*[_.]{2})[^_.].*[^_.]$/;
+    const email_regex = /^\S+@\S+\.\S+$/;
+    if (!user_name_regex.test(safeUsername) || !email_regex.test(safeEmail)) {
+        return c.json({ message: "Wrong email or username format" }, 406);
+    }
+
     try {
         const statement = db.prepare(
             "INSERT INTO User (email, user_name, password, profile_image) VALUES (?, ?, ?, ?)"

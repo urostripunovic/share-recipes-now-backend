@@ -50,7 +50,7 @@ login.post("/login", async (c) => {
             {
                 user_id: user?.user_id,
                 user_name: user?.user_name,
-                ...expiresIn(1), //"15min"
+                ...expiresIn("15min"), //"15min"
             },
             process.env.ACCESS_TOKEN_SECRET!
         );
@@ -60,7 +60,6 @@ login.post("/login", async (c) => {
             secure: true,
             sameSite: "None",
             maxAge: 15 * 60 * 1000,
-            path: "/",
         });
 
         //This one is sent to the database for each browser
@@ -90,7 +89,6 @@ login.post("/login", async (c) => {
             secure: true,
             sameSite: "None",
             maxAge:  4 * 24 * 60 * 60 * 1000,
-            path: "/",
         });
 
         db.prepare(

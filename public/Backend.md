@@ -191,15 +191,16 @@ These are the routes that will be roughly implemented some will be in steps whil
     - Instructions 
 - Retry all the routes that need a access token once the login is created
 - One for a user to view their user info, saved recipes, created recipes and comments **auth**
-- One to log users out of the session.
 
 ### Access user information
 
 ### Increased security
-I came across this reddit thread where someone asked if they could [roast their express server](https://www.reddit.com/r/node/comments/17eg2m5/roast_my_serverts_code_of_express_and_what_to/), api rate limit with redis, access and refresh token
+I came across this reddit thread where someone asked if they could [roast their express server](https://www.reddit.com/r/node/comments/17eg2m5/roast_my_serverts_code_of_express_and_what_to/). And in this thread I could see my own node server being roasted, no security headers like [helmet.js](https://helmetjs.github.io/), but Hono has their own version of it, or api rate limits to stop brute force attacks, well I thought of implementing it but Hono doesn't have a rate limit implementation so I'm required to implement one myself which will be insightful.
 
-### Login
+### Login / Logout
 Not gonna lie having to perform some good security checks when working with jwt and cookies was a lot harder than I expected. For starters you need a access token that is short lived and than a refresh token that isn't. The refresh token is stored both on the browser and the database, on the browser it's http only and in the database it's not... The access token is stored in the browser but the more you read about access token the more confusing it gets, it stored on the browser and it might or might not be okay for it to be accessed via JavaScript, so which is it? Idk really but I think having it be httpOnly is the best course of action and more secure that way. The implementation of rotation tokens wasn't that hard to do, it required some thought put into it, like if they have a forged token with a user_id it is best to delete the tokens related to that user, the next step would be to then issue out new access tokens each time they expire, for security reasons you know, and while we're at it it's also better to then rotate the refresh tokens for even more security so the only times a refresh token expires is if the user hasn't been logged in for a while. This doesn't eliminate the security risks but it does mitigate them a lot more. Then the question became how would I in the frontend know when to use the refresh token api end point? And well of course [stackoverflow](https://stackoverflow.com/questions/67957291/when-should-we-refresh-access-token-in-frontend) has asked the question, what I need to do is to on the frontend wait for a 401 response and then try and issue a new access token, if the refresh token has expired then it's a redirect to the log in page again.
+
+Logout is always the easiest part when it comes to API endpoint implementation, delete the cookie from the browser and database and call it a day.
 
 ### Creating separate routes + rendering images from buffers
 Honestly at this point the code had close to 400 lines of code. I need to clean it up, it was getting hard to read. There are a bunch of files but at least the code is no more readable and not a complete mess.

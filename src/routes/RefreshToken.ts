@@ -67,7 +67,6 @@ refresh.get("/refresh", async (c) => {
             secure: true,
             sameSite: "None",
             maxAge: 15 * 60 * 1000,
-            path: "/",
         });
 
         const newRefreshToken = await sign(
@@ -84,7 +83,6 @@ refresh.get("/refresh", async (c) => {
             secure: true,
             sameSite: "None",
             maxAge: 4 * 24 * 60 * 60 * 1000,
-            path: "/",
         });
 
         const transaction = c.var.database.transaction((db) => {

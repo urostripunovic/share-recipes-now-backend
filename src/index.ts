@@ -10,7 +10,7 @@ import { sign } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
 import { expiresIn, processImage } from "./utils/utils";
-import { recipes, authTheUser, userAction } from "./routes/Routes";
+import { recipes, authUserAction, userAction } from "./routes/Routes";
 import fs from "node:fs";
 import { html, raw } from "hono/html";
 
@@ -19,7 +19,7 @@ dotenv.config();
 const db = new Database(path.resolve("test.db") /*{ verbose: console.log }*/);
 db.pragma("journal_mode = WAL");
 
-const someUnacceptableSize = 4 * 1024 * 1024 * 1024; // 4 gbs in bytes
+const someUnacceptableSize = 2 * 1024 * 1024 * 1024; // 2 gbs in bytes
 setInterval(
     fs.stat.bind(null, "test.db-wal", (err, stat) => {
         if (err) {
@@ -54,9 +54,7 @@ app.use(
 
 app.use(
     "*",
-    secureHeaders({
-        xXssProtection: false,
-    })
+    secureHeaders()
 );
 
 //datbase can be used across the server application
@@ -65,28 +63,6 @@ app.use("*", async (c, next) => {
     await next();
 });
 
-app.post("/test", async (c) => {
-    const token = await sign(
-        { user_id: 1, user_name: "para knas", ...expiresIn("1min") }, //no point in catch since i'll be using try-catch
-        process.env.ACCESS_TOKEN_SECRET!
-    );
-    setCookie(c, "__session", token, {
-        httpOnly: true,
-        secure: true,
-        path: "/",
-    });
-
-    return c.json({ msg: "User logged in", token }, 200);
-});
-
-app.get("/test", cookieAuth, async (c) => {
-    try {
-        const user = c.var.user;
-        return c.json(user, 200);
-    } catch (error) {
-        return c.json({ error: "Internal Server Error" }, 500);
-    }
-});
 
 interface ProfileImage {
     profile_image: ArrayBuffer;
@@ -104,16 +80,12 @@ app.get("/render-test", async (c) => {
 });
 
 //authenticate the user
-app.route("/", authTheUser);
+app.route("/", userAction);
 //no auth needed make one head route for the ones that don't need a auth, non user centric route
 app.route("/", recipes);
 
-//auth needed make a route for all the auth ones, user centric route
-//Update recipe
-//Create recipe
-//Create user information end point
 //app.use("/api/*", cookieAuth);
-app.route("/api", userAction); //Lägg till middleware här när det är done
+app.route("/api", authUserAction);
 
 const port = parseInt(process.env.PORT!) || 3000;
 serve({

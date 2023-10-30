@@ -9,20 +9,24 @@ import { register } from "./Register";
 import { login } from "./Login";
 import { refresh } from "./refreshToken";
 import { Hono } from "hono";
+import { logout } from "./Logout";
 
 export const recipes = new Hono();
 recipes.route("/", ready_recipes);
 recipes.route("/", recipe);
 recipes.route("/", search);
 
-export const authTheUser = new Hono();
-authTheUser.route("/", refresh);
-authTheUser.route("/", login);
-authTheUser.route("/", register);
-//logout route
-
 export const userAction = new Hono();
-userAction.route("/", save_recipe);
-userAction.route("/", user_score); 
-userAction.route("/", rate_recipe); 
-userAction.route("/", comment); 
+userAction.route("/", refresh);
+userAction.route("/", login);
+userAction.route("/", register);
+userAction.route("/", logout);
+
+export const authUserAction = new Hono();
+authUserAction.route("/", save_recipe);
+authUserAction.route("/", user_score); 
+authUserAction.route("/", rate_recipe); 
+authUserAction.route("/", comment);
+//Update recipe
+//Create recipe
+//Create get user information end point
