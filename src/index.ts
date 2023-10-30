@@ -28,11 +28,10 @@ setInterval(
             db.pragma("wal_checkpoint(RESTART)");
         }
     }),
-    5000
-).unref();
+    5000).unref();
 
 console.log(db.prepare(`SELECT * FROM Session`).all().length);
-//console.log(db.prepare(`DELETE FROM Session WHERE user_id=?`).run(5));
+//console.log(db.prepare(`SELECT * FROM User WHERE user_id=?`).get(8));
 
 type Variables = {
     database: db;
@@ -71,8 +70,8 @@ interface ProfileImage {
 app.get("/render-test", async (c) => {
     const { profile_image } = db
         .prepare("SELECT profile_image FROM User WHERE user_name = ?")
-        .get("test_user_5") as ProfileImage;
-    const dataURI = await processImage(profile_image);
+        .get("test_user_8") as ProfileImage;
+    const dataURI = profile_image;
     return c.html(
         html` <h1>Hello! ${"username"}!</h1>
             <img src="${dataURI}" alt="Randy's balls" />`

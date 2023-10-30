@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { Database } from "better-sqlite3";
-import { processImage } from "../utils/processImage";
 
 type Variables = {
     database: Database;
@@ -35,11 +34,7 @@ search.get("/search-recipe", async (c) => {
             GROUP BY R.recipe_id;`
             )
             .all(`%${q.trim()}%`) as Recipe[];
-        
-        for (const recipe of recipes) {
-            recipe.dish_image = await processImage(recipe.dish_image as ArrayBuffer);
-        }
-        
+                
         const results = recipes.length;
         return c.json({ recipes, results }, 200);
     } catch (error) {

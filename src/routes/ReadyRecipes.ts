@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { Database } from "better-sqlite3";
-import { processImage } from "../utils/processImage";
 
 type Variables = {
     database: Database;
@@ -63,10 +62,6 @@ export async function fastOrRatedFood(db: Database, score?: boolean): Promise<Re
             HAVING ${part_of_query}`
             )
             .all() as Recipe[];
-        
-        for(const recipe of json) {
-            recipe.dish_image = await processImage(recipe.dish_image as ArrayBuffer);
-        }
 
         return json;
     } catch (error) {

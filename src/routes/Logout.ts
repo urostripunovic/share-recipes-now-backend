@@ -18,7 +18,7 @@ logout.get("/logout", (c) => {
     deleteCookie(c, "accessToken");
     const token = getCookie(c, "refreshToken");
     if (!token) return c.body(null, 204);
-
+    
     //is refresh token in database?
     try {
         const sessionInfo = db
@@ -26,6 +26,7 @@ logout.get("/logout", (c) => {
                 "SELECT refresh_token FROM Session WHERE refresh_token = ?"
             )
             .get(token) as Session;
+            
         //If there is no token in the db then just delete it from the browser
         if (!sessionInfo?.refresh_token) {
             deleteCookie(c, "refreshToken");

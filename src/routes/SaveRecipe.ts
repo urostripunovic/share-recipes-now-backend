@@ -2,6 +2,9 @@ import { Hono } from "hono";
 import { Database } from "better-sqlite3";
 
 type Variables = {
+    user: {
+        user_id: string;
+    }
     database: Database;
 };
 
@@ -9,9 +12,8 @@ export const save_recipe = new Hono<{ Variables: Variables }>();
 
 //middleware här också
 save_recipe.get("/save-recipe/:recipe_id", async (c) => {
-    //const { user_id } = c.var.user;
+    const { user_id } = c.var.user;
     const id = c.req.param("recipe_id");
-    const user_id = 1;
 
     try {
         const saved = c.var.database

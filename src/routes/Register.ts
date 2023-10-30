@@ -5,9 +5,12 @@ import {
     validateString,
     validateFileType,
     validatePassword,
+    processImage,
 } from "../utils/utils";
 
 const salt = bcrypt.genSaltSync(10);
+const user_name_regex = /^(?=[a-zA-Z0-9._]{3,16}$)(?!.*[_.]{2})[^_.].*[^_.]$/;
+const email_regex = /^\S+@\S+\.\S+$/;
 
 type Variables = {
     database: Database;
@@ -55,6 +58,11 @@ register.post("/register/", async (c) => {
         return c.json({ message: `${email} is already in use` }, 406);
     }
 
+    //Check if email and username have the correct regex
+    if (!user_name_regex.test(safeUsername) || !email_regex.test(safeEmail)) {
+        return c.json({ message: "Wrong email or username format" }, 406);
+    }
+
     //sanitation and password validation again.
     const safePassword = validateString(password as string);
     if (!validatePassword(safePassword)) {
@@ -67,17 +75,12 @@ register.post("/register/", async (c) => {
     if (image && !validateFileType(image as File)) {
         return c.json({ message: "Wrong file type" }, 406);
     }
-    const profile_image = await convertImageToBuffer(image as File);
-    //console.log(profile_image)
 
-    //Check if email and username have the correct regex
-    const user_name_regex = /^(?=[a-zA-Z0-9._]{3,16}$)(?!.*[_.]{2})[^_.].*[^_.]$/;
-    const email_regex = /^\S+@\S+\.\S+$/;
-    if (!user_name_regex.test(safeUsername) || !email_regex.test(safeEmail)) {
-        return c.json({ message: "Wrong email or username format" }, 406);
-    }
+    const image_buffer = await convertImageToBuffer(image as File);
+    const profile_image = await processImage(image_buffer);
 
     try {
+        
         const statement = db.prepare(
             "INSERT INTO User (email, user_name, password, profile_image) VALUES (?, ?, ?, ?)"
         );
@@ -107,7 +110,7 @@ function checkExistence(db: Database, obj: ExistenceCheck): boolean {
     return check ? true : false;
 }
 
-async function convertImageToBuffer(image_file: Blob) : Promise<Blob | ArrayBuffer> {
+async function convertImageToBuffer(image_file: Blob) : Promise<ArrayBuffer> {
     //kolla om annat än array buffer
     let image: ArrayBuffer;
     if (image_file) {

@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { Database } from "better-sqlite3";
-import { processImage } from "../utils/utils";
 
 type Variables = {
     database: Database;
@@ -62,8 +61,6 @@ async function getRecipe(db: Database, id: string): Promise<Recipe> {
         WHERE R.recipe_id = ?`
         )
         .get(id) as Recipe;
-
-    recipe.dish_image = await processImage(recipe.dish_image as ArrayBuffer);
 
     return recipe;
 }
