@@ -11,13 +11,25 @@ import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
 import { expiresIn, processImage } from "./utils/utils";
 import { recipes, authTheUser, userAction } from "./routes/Routes";
-
+import fs from "node:fs";
 import { html, raw } from "hono/html";
 
 dotenv.config();
 
 const db = new Database(path.resolve("test.db") /*{ verbose: console.log }*/);
 db.pragma("journal_mode = WAL");
+
+const someUnacceptableSize = 4 * 1024 * 1024 * 1024; // 4 gbs in bytes
+setInterval(
+    fs.stat.bind(null, "test.db-wal", (err, stat) => {
+        if (err) {
+            if (err.code !== "ENOENT") throw err;
+        } else if (stat.size > someUnacceptableSize) {
+            db.pragma("wal_checkpoint(RESTART)");
+        }
+    }),
+    5000
+).unref();
 
 console.log(db.prepare(`SELECT * FROM Session`).all().length);
 //console.log(db.prepare(`DELETE FROM Session WHERE user_id=?`).run(5));

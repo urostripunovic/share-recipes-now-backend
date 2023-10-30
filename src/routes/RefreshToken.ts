@@ -74,7 +74,7 @@ refresh.get("/refresh", async (c) => {
             {
                 user_id,
                 user_name,
-                ...expiresIn("4days"), //"15min"
+                ...expiresIn("4days"), //"4days"
             },
             process.env.REFRESH_TOKEN_SECRET!
         );
