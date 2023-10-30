@@ -15,11 +15,10 @@ export async function cookieAuth(c: Context, next: Next) {
         await next();
     } catch (error) {
         deleteCookie(c, "accessToken");
-        const status = error?.message.split(" ").at(-1); //expired
-        //console.log(status);
-        if (status === "expired")
-            return c.json({ error: "Access token has expired" }, 401); //expired access token
+        const { name } = error //expired
+        if (name === "JwtTokenExpired")
+            return c.json({ error: "Access token has expired" }, 401); //expired access token*/
 
-        return c.json({ error: "Invalid token" }, 403); //invalid token
+        return c.json({ error }, 403); //invalid token
     }
 }

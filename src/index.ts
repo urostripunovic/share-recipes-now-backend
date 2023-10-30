@@ -63,6 +63,15 @@ app.use("*", async (c, next) => {
 });
 
 
+app.get("/test", cookieAuth, async (c) => {
+    try {
+        const user = c.var.user;
+        return c.json(user, 200);
+    } catch (error) {
+        return c.json({ error: "Internal Server Error" }, 500);
+    }
+});
+
 interface ProfileImage {
     profile_image: ArrayBuffer;
 }
