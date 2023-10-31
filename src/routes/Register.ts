@@ -45,20 +45,20 @@ register.post("/register/", async (c) => {
 
     //Check if user name exists + sanitize
     const safeUsername = validateString(user_name as string);
-    if(checkExistence(db, { key: "user_name", value: safeUsername })) {
+    if(checkExistence(db, { key: "user_name", value: safeUsername })) 
         return c.json({ message: "Username is already in use"}, 406)
-    }
+    
 
     //Check if email is already in use + sanitize
     const safeEmail = validateString(email as string);
-    if(checkExistence(db, { key: "email", value: safeEmail })) {
+    if(checkExistence(db, { key: "email", value: safeEmail })) 
         return c.json({ message: "Email is already in use"}, 406)
-    }
-
-
+    
     //Check if email and username have the correct regex
-    if (!validateForm().validateUsername(safeUsername)) return c.json({ message: "Wrong username format" }, 406);
-    else if (!validateForm().validateEmail(safeEmail))  return c.json({ message: "Wrong email format" }, 406);
+    if (!validateForm().validateUsername(safeUsername)) 
+        return c.json({ message: "Wrong username format" }, 406);
+    else if (!validateForm().validateEmail(safeEmail))  
+        return c.json({ message: "Wrong email format" }, 406);
 
     //sanitation and password validation again.
     const safePassword = validateString(password as string);
