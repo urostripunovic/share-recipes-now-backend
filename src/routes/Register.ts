@@ -62,7 +62,8 @@ register.post("/register/", async (c) => {
 
     //sanitation and password validation again.
     const safePassword = validateString(password as string);
-    if (!validateForm().validatePassword(safePassword)) return c.json({ message: "Password is to weak" }, 406);
+    if (!validateForm().validatePassword(safePassword)) 
+        return c.json({ message: "Password is to weak" }, 406);
     
     //Salt and has password
     const pass_word: string = await bcrypt.hash(safePassword, salt);
