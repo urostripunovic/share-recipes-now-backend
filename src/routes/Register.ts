@@ -1,8 +1,11 @@
 import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
 import { Database } from "better-sqlite3";
 import bcrypt from "bcrypt";
-import { validateString, validateForm, processImage } from "../utils/utils";
+import {
+    validateString,
+    validateForm,
+    processImage,
+} from "../utils/utils";
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -42,28 +45,39 @@ register.post("/register/", async (c) => {
 
     //Check if user name exists + sanitize
     const safeUsername = validateString(user_name as string);
-    checkExistence(db, { key: "user_name", value: safeUsername });
+    if(checkExistence(db, { key: "user_name", value: safeUsername })) {
+        return c.json({ message: "Username is already in use"}, 406)
+    }
 
     //Check if email is already in use + sanitize
     const safeEmail = validateString(email as string);
-    checkExistence(db, { key: "email", value: safeEmail });
+    if(checkExistence(db, { key: "email", value: safeEmail })) {
+        return c.json({ message: "Email is already in use"}, 406)
+    }
+
 
     //Check if email and username have the correct regex
-    validateForm().validateUsername(safeUsername);
-    validateForm().validateEmail(safeEmail);
+    if (!validateForm().validateUsername(safeUsername)) return c.json({ message: "Wrong username format" }, 406);
+    else if (!validateForm().validateEmail(safeEmail))  return c.json({ message: "Wrong email format" }, 406);
 
     //sanitation and password validation again.
     const safePassword = validateString(password as string);
-    validateForm().validatePassword(safePassword);
-
+    if (!validateForm().validatePassword(safePassword)) return c.json({ message: "Password is to weak" }, 406);
+    
     //Salt and has password
     const pass_word: string = await bcrypt.hash(safePassword, salt);
 
-    //handle image types & convert image to buffer/string
+    //handle image types
     if (image) {
-        validateForm().validateFileSize(image as File);
-        validateForm().validateFileType(image as File);
+        if (!validateForm().validateFileType(image as File)) {
+            return c.json({ message: "Wrong file type" }, 406);
+        } else if (!validateForm().validateFileSize(image as File)) {
+            const size = ((image as File).size/(1024*1024)).toFixed(1);
+            return c.json({ message: `File size is ${size}MB, keep it to 2MB` }, 406);
+        }
     }
+
+    //convert image to buffer/string
     const image_buffer = await convertImageToBuffer(image as File);
     const profile_image = await processImage(image_buffer);
 
@@ -72,7 +86,10 @@ register.post("/register/", async (c) => {
             "INSERT INTO User (email, user_name, password, profile_image) VALUES (?, ?, ?, ?)"
         );
         statement.run(safeEmail, safeUsername, pass_word, profile_image);
-        return c.json({ message: `User has been created!` }, 201);
+        return c.json(
+            { message: `User has been created!` },
+            201
+        );
     } catch (error) {
         return c.json(
             { error: "Something went wrong from the servers end" },
@@ -86,17 +103,13 @@ interface ExistenceCheck {
     value: string;
 }
 
-function checkExistence(db: Database, obj: ExistenceCheck): void {
+function checkExistence(db: Database, obj: ExistenceCheck): boolean {
     const { key, value } = obj;
-
-    const check = db
-        .prepare(`SELECT ${key} FROM User WHERE ${key} = ?`)
-        .get(value);
-    if (check)
-        throw new HTTPException(406, { message: `${key} is already in use` });
+    const check = db.prepare(`SELECT ${key} FROM User WHERE ${key} = ?`).get(value);    
+    return check ? true : false;
 }
 
-async function convertImageToBuffer(image_file: Blob): Promise<ArrayBuffer> {
+async function convertImageToBuffer(image_file: Blob) : Promise<ArrayBuffer> {
     //kolla om annat än array buffer
     let image: ArrayBuffer;
     if (image_file) {

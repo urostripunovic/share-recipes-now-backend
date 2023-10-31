@@ -6,7 +6,7 @@ import { HTTPException } from "hono/http-exception";
 export function cookieAuth(): MiddlewareHandler {
     return async (c, next) => {
         const accessToken = getCookie(c, "accessToken");
-        if (!accessToken)
+        if (!accessToken) 
             throw new HTTPException(401, { message: "No token found" });
 
         try {
