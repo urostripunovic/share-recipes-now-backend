@@ -5,33 +5,30 @@ import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
 import { serve } from "@hono/node-server";
 import { handle } from "@hono/node-server/vercel";
-import { setCookie } from "hono/cookie";
-import { sign } from "hono/jwt";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
-import { expiresIn, processImage } from "./utils/utils";
 import { recipes, authUserAction, userAction } from "./routes/Routes";
 import fs from "node:fs";
-import { html, raw } from "hono/html";
+import { html } from "hono/html";
 
 dotenv.config();
 
-const db = new Database(path.resolve("test.db") /*{ verbose: console.log }*/);
+const db = new Database(path.resolve("test.db")/*, { verbose: console.log }*/);
 db.pragma("journal_mode = WAL");
 
-const someUnacceptableSize = 2 * 1024 * 1024 * 1024; // 2 gbs in bytes
+const unacceptableSize = 2 * 1024 * 1024 * 1024; // 2 gbs in bytes
 setInterval(
     fs.stat.bind(null, "test.db-wal", (err, stat) => {
         if (err) {
             if (err.code !== "ENOENT") throw err;
-        } else if (stat.size > someUnacceptableSize) {
+        } else if (stat.size > unacceptableSize) {
             db.pragma("wal_checkpoint(RESTART)");
         }
     }),
     5000).unref();
 
-console.log(db.prepare(`SELECT * FROM Session`).all().length);
-//console.log(db.prepare(`SELECT * FROM User WHERE user_id=?`).get(8));
+//console.log(db.prepare(`SELECT * FROM Session`).all().length);
+//console.log(db.prepare(`SELECT * FROM User WHERE user_name = ?`).get("test_user_11"));
 
 type Variables = {
     database: db;
@@ -63,7 +60,7 @@ app.use("*", async (c, next) => {
 });
 
 
-app.get("/test", cookieAuth, async (c) => {
+app.get("/test", cookieAuth(), async (c) => {
     try {
         const user = c.var.user;
         return c.json(user, 200);

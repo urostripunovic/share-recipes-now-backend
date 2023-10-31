@@ -1,12 +1,11 @@
 import { expiresIn } from "./jwtExpires";
 import { processImage } from "./processImage";
-import { validateString, validateFileType, validatePassword } from "./validate";
+import { validateString, validateForm } from "./validate";
 
 
 export {
     expiresIn,
     validateString,
-    validateFileType,
-    validatePassword,
+    validateForm,
     processImage
 };

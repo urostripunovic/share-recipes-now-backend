@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Context, Hono } from "hono";
 import { Database } from "better-sqlite3";
 import { sign } from "hono/jwt";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
@@ -36,7 +36,7 @@ login.post("/login", async (c) => {
             .get(username) as User;
         //console.log(username, password, user?.password);
 
-        if (!user?.password) {
+        if (!user?.user_id) {
             return c.json({ message: `${username} doesn't exist` }, 404);
         }
 
@@ -72,23 +72,13 @@ login.post("/login", async (c) => {
             process.env.REFRESH_TOKEN_SECRET!
         );
 
-        const userToken = c.var.database
-            .prepare("SELECT user_id, refresh_token FROM Session WHERE refresh_token = ?")
-            .get(refreshToken) as any;
+        removeCurrentBrowserRefreshToken(refreshToken, c);
 
-        //User doesn't log out and the cookie is stolen
-        if (!userToken?.refresh_token) {
-            c.var.database
-                .prepare("DELETE FROM Session WHERE refresh_token = ?")
-                .run(refreshToken);
-        }
-        deleteCookie(c, "refreshToken");
-            
         setCookie(c, "refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: "None",
-            maxAge:  4 * 24 * 60 * 60 * 1000,
+            maxAge: 4 * 24 * 60 * 60 * 1000,
         });
 
         db.prepare(
@@ -100,3 +90,25 @@ login.post("/login", async (c) => {
         return c.json({ error });
     }
 });
+
+const removeCurrentBrowserRefreshToken = (
+    refreshToken: string | undefined,
+    c: Context
+): void => {
+    const db = c.var.database;
+    db.transaction(() => {
+        const userToken = db
+            .prepare(
+                "SELECT user_id, refresh_token FROM Session WHERE refresh_token = ?"
+            )
+            .get(refreshToken) as any;
+
+        //Someone tries to reuse a token from when the user hasn't logged out and back in after a while
+        if (!userToken?.refresh_token) {
+            db.prepare("DELETE FROM Session WHERE refresh_token = ?").run(
+                refreshToken
+            );
+        }
+        deleteCookie(c, "refreshToken");
+    });
+};

@@ -1,24 +1,30 @@
-import { Context, Next } from "hono";
+import { MiddlewareHandler } from "hono";
 import { getCookie, deleteCookie } from "hono/cookie";
 import { verify } from "hono/jwt";
+import { HTTPException } from "hono/http-exception";
 
-export async function cookieAuth(c: Context, next: Next) {
-    const accessToken = getCookie(c, "accessToken");
-    if (!accessToken) return c.json({ message: "No token found" }, 401);
+export function cookieAuth(): MiddlewareHandler {
+    return async (c, next) => {
+        const accessToken = getCookie(c, "accessToken");
+        if (!accessToken)
+            throw new HTTPException(401, { message: "No token found" });
 
-    try {
-        const user = await verify(
-            accessToken,
-            process.env.ACCESS_TOKEN_SECRET!
-        );
-        c.set("user", user);
-        await next();
-    } catch (error) {
-        deleteCookie(c, "accessToken");
-        const { name } = error //expired
-        if (name === "JwtTokenExpired")
-            return c.json({ error: "Access token has expired" }, 401); //expired access token*/
+        try {
+            const user = await verify(
+                accessToken,
+                process.env.ACCESS_TOKEN_SECRET!
+            );
+            c.set("user", user);
+            await next();
+        } catch (error) {
+            deleteCookie(c, "accessToken");
+            const { name } = error; //expired
+            if (name === "JwtTokenExpired")
+                throw new HTTPException(401, {
+                    message: "Access token has expired",
+                });
 
-        return c.json({ error }, 403); //invalid token
-    }
+            throw new HTTPException(403, { message: "Invalid token" });
+        }
+    };
 }
