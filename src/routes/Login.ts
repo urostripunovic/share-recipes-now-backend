@@ -105,8 +105,8 @@ const removeCurrentBrowserRefreshToken = (
 
         //Someone tries to reuse a token from when the user hasn't logged out and back in after a while
         if (!userToken?.refresh_token) {
-            db.prepare("DELETE FROM Session WHERE refresh_token = ?").run(
-                refreshToken
+            db.prepare("DELETE FROM Session WHERE user_id = ?").run(
+                userToken.user_id
             );
         }
         deleteCookie(c, "refreshToken");
