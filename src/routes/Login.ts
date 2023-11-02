@@ -72,7 +72,8 @@ login.post("/login", async (c) => {
             process.env.REFRESH_TOKEN_SECRET!
         );
 
-        removeCurrentBrowserRefreshToken(refreshToken, c);
+        //remove the reused or stolen token from the db and browser
+        if (!refreshToken) removeRefreshToken(refreshToken, c);
 
         setCookie(c, "refreshToken", newRefreshToken, {
             httpOnly: true,
@@ -91,24 +92,22 @@ login.post("/login", async (c) => {
     }
 });
 
-const removeCurrentBrowserRefreshToken = (
+const removeRefreshToken = (
     refreshToken: string | undefined,
     c: Context
 ): void => {
     const db = c.var.database;
     db.transaction(() => {
+        //can't deconstruct undefined so having an optional chaining operator takes care of empty queries  
         const userToken = db
             .prepare(
                 "SELECT user_id, refresh_token FROM Session WHERE refresh_token = ?"
             )
             .get(refreshToken) as any;
 
-        //Someone tries to reuse a token from when the user hasn't logged out and back in after a while
-        if (!userToken?.refresh_token) {
-            db.prepare("DELETE FROM Session WHERE user_id = ?").run(
-                userToken.user_id
-            );
-        }
-        deleteCookie(c, "refreshToken");
+        //Someone tries to reuse a token from when the user hasn't logged out and back in after a while, log them out of everything
+        if (!userToken?.refresh_token) db.prepare("DELETE FROM Session WHERE user_id = ?").run(userToken.user_id);
+        
     });
+    deleteCookie(c, "refreshToken");
 };

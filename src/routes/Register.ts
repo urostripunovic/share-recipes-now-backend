@@ -20,7 +20,9 @@ interface Exist {
 
 export const register = new Hono<{ Variables: Variables }>();
 
-//middleware här också
+//Middleware to ensure that the image upload isn't bigger than 6mb
+//register.use();
+
 register.get("/register/exists", (c) => {
     //use like statement return true or false if username is already in use
     const { user_name, e_mail } = c.req.query();
@@ -46,38 +48,36 @@ register.post("/register/", async (c) => {
     //Check if user name exists + sanitize
     const safeUsername = validateString(user_name as string);
     if(checkExistence(db, { key: "user_name", value: safeUsername })) 
-        return c.json({ message: "Username is already in use"}, 406)
+        return c.body("Username is already in use", 406)
     
 
     //Check if email is already in use + sanitize
     const safeEmail = validateString(email as string);
     if(checkExistence(db, { key: "email", value: safeEmail })) 
-        return c.json({ message: "Email is already in use"}, 406)
+        return c.body("Email is already in use", 406)
     
     //Check if email and username have the correct regex
     if (!validateForm().validateUsername(safeUsername)) 
-        return c.json({ message: "Wrong username format" }, 406);
+        return c.body("Wrong username format", 406);
     else if (!validateForm().validateEmail(safeEmail))  
-        return c.json({ message: "Wrong email format" }, 406);
+        return c.body("Wrong email format", 406);
 
     //sanitation and password validation again.
     const safePassword = validateString(password as string);
     if (!validateForm().validatePassword(safePassword)) 
-        return c.json({ message: "Password is to weak" }, 406);
-    
+        return c.body("Password is to weak", 406);
     //Salt and has password
     const pass_word: string = await bcrypt.hash(safePassword, salt);
 
     //handle image types
     if (image) {
         if (!validateForm().validateFileType(image as File)) {
-            return c.json({ message: "Wrong file type" }, 406);
+            return c.body("Wrong file type", 406);
         } else if (!validateForm().validateFileSize(image as File)) {
             const size = ((image as File).size/(1024*1024)).toFixed(1);
-            return c.json({ message: `File size is ${size}MB, keep it to 2MB` }, 406);
+            return c.body(`File size is ${size}MB, keep it to 2MB`, 406);
         }
     }
-
     //convert image to buffer/string
     const image_buffer = await convertImageToBuffer(image as File);
     const profile_image = await processImage(image_buffer);

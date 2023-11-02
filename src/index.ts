@@ -13,10 +13,10 @@ import { html } from "hono/html";
 
 dotenv.config();
 
+//config database
 const db = new Database(path.resolve("test.db")/*, { verbose: console.log }*/);
 db.pragma("journal_mode = WAL");
-
-const unacceptableSize = 2 * 1024 * 1024 * 1024; // 2 gbs in bytes
+const unacceptableSize = 25 * 1024 * 1024 * 1024; // 10 gbs in bytes
 setInterval(
     fs.stat.bind(null, "test.db-wal", (err, stat) => {
         if (err) {
@@ -24,8 +24,7 @@ setInterval(
         } else if (stat.size > unacceptableSize) {
             db.pragma("wal_checkpoint(RESTART)");
         }
-    }),
-    5000).unref();
+    }),5000).unref();
 
 //console.log(db.prepare(`SELECT * FROM Session`).all().length);
 //console.log(db.prepare(`SELECT * FROM User WHERE user_name = ?`).get("test_user_11"));

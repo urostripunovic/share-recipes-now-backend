@@ -1,5 +1,3 @@
-import { HTTPException } from "hono/http-exception";
-
 export function validateString(unsafe: string): string {
     const safe = unsafe
         .trim()
@@ -60,7 +58,7 @@ export function validateForm() {
      * @returns boolean if the file size it so big
      */
     function validateFileSize(image: File): boolean {
-        const unacceptableSize = 2 * 1024 * 1024; // 2 mbs in bytes
+        const unacceptableSize = 6 * 1024 * 1024; // 6 mbs in bytes
         return image.size < unacceptableSize;
     }
 
