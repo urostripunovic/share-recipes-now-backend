@@ -12,8 +12,8 @@ recipe.get("recipe/:recipe_id", async (c) => {
     //hämta all info för recept med :id
     const id = c.req.param("recipe_id");
     try {
-        const recipe = db.transaction(async () => {
-            const recipe = await getRecipe(db, id);
+        const recipe = db.transaction(() => {
+            const recipe = getRecipe(db, id);
             //spara denna tills vidare kolla i recipeUtils efter några scores finns
             const score = getScore(db, id);
             const recipe_ingredients = getRecipeIngredients(db, id);
@@ -28,10 +28,10 @@ recipe.get("recipe/:recipe_id", async (c) => {
             };
         });
 
-        if (!(await recipe())?.recipe)
+        if (!recipe()?.recipe)
             return c.json({ message: "No recipe sorry" }, 404);
 
-        return c.json(await recipe(), 200);
+        return c.json(recipe(), 200);
     } catch (error) {
         return c.json(
             { error: `No recipe with id: ${id} in the database` },
@@ -51,7 +51,7 @@ type Recipe = {
     dish_image: ArrayBuffer | String | undefined;
 };
 
-async function getRecipe(db: Database, id: string): Promise<Recipe> {
+function getRecipe(db: Database, id: string): Recipe {
     const recipe = db
         .prepare(
             //, COUNT(U.user_id) AS votes

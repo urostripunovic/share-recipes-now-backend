@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import {
     validateString,
     validateForm,
-    processImage,
+    uploadToBucket,
 } from "../utils/utils";
 
 const salt = bcrypt.genSaltSync(10);
@@ -75,12 +75,10 @@ register.post("/register/", async (c) => {
             return c.body("Wrong file type", 406);
         } else if (!validateForm().validateFileSize(image as File)) {
             const size = ((image as File).size/(1024*1024)).toFixed(1);
-            return c.body(`File size is ${size}MB, keep it to 2MB`, 406);
+            return c.body(`File size is ${size}MB, keep it to 6MB`, 406);
         }
     }
-    //convert image to buffer/string
-    const image_buffer = await convertImageToBuffer(image as File);
-    const profile_image = await processImage(image_buffer);
+    const profile_image = await uploadToBucket(image as Blob);
 
     try {
         const statement = db.prepare(
@@ -108,17 +106,4 @@ function checkExistence(db: Database, obj: ExistenceCheck): boolean {
     const { key, value } = obj;
     const check = db.prepare(`SELECT ${key} FROM User WHERE ${key} = ?`).get(value);    
     return check ? true : false;
-}
-
-async function convertImageToBuffer(image_file: Blob) : Promise<ArrayBuffer> {
-    //kolla om annat än array buffer
-    let image: ArrayBuffer;
-    if (image_file) {
-        const arrayBuffer = await image_file.arrayBuffer();
-        image = Buffer.from(arrayBuffer);
-    } else {
-        return image_file;
-    }
-
-    return image;
 }

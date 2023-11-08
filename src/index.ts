@@ -10,6 +10,7 @@ import { cookieAuth } from "./middleware/auth";
 import { recipes, authUserAction, userAction } from "./routes/Routes";
 import fs from "node:fs";
 import { html } from "hono/html";
+import { uploadToBucket } from "./utils/utils";
 
 dotenv.config();
 
@@ -27,7 +28,7 @@ setInterval(
     }),5000).unref();
 
 //console.log(db.prepare(`SELECT * FROM Session`).all().length);
-//console.log(db.prepare(`SELECT * FROM User WHERE user_name = ?`).get("test_user_11"));
+//console.log(db.prepare(`SELECT * FROM User WHERE user_name = ?`).get("test_user_13"));
 
 type Variables = {
     database: db;
@@ -72,10 +73,18 @@ interface ProfileImage {
     profile_image: ArrayBuffer;
 }
 
+app.post("/upload-test", async (c) => {
+    const { image } = await c.req.parseBody();
+    console.log(image);
+    const res = await uploadToBucket(image as Blob);
+    console.log(res);
+    return c.body(null, 204);
+})
+
 app.get("/render-test", async (c) => {
     const { profile_image } = db
         .prepare("SELECT profile_image FROM User WHERE user_name = ?")
-        .get("test_user_8") as ProfileImage;
+        .get("test_user_13") as ProfileImage;
     const dataURI = profile_image;
     return c.html(
         html` <h1>Hello! ${"username"}!</h1>
@@ -88,7 +97,7 @@ app.route("/", userAction);
 //no auth needed make one head route for the ones that don't need a auth, non user centric route
 app.route("/", recipes);
 
-//app.use("/api/*", cookieAuth);
+//app.use("/api/*", cookieAuth());
 app.route("/api", authUserAction);
 
 const port = parseInt(process.env.PORT!) || 3000;

@@ -10,6 +10,7 @@ import { login } from "./Login";
 import { refresh } from "./refreshToken";
 import { Hono } from "hono";
 import { logout } from "./Logout";
+import { user_info } from "./UserInformation";
 
 export const recipes = new Hono();
 recipes.route("/", ready_recipes);
@@ -30,3 +31,4 @@ authUserAction.route("/", comment);
 //Update recipe
 //Create recipe
 //Create get user information end point
+authUserAction.route("/", user_info);

@@ -175,13 +175,9 @@ UX would look something like this:
 
 
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
-- Implement api key as well.
-- Implement the api.ts file or not see how easy it is.
+- Implement the api.ts file or not see how easy it is. Implement all the types and import them where needed
 - Implement a rate limit for login, there is a [npm package for it using redis](https://github.com/upstash/ratelimit#install)
-- Redo the processImage function when fetching recipes and user information
 - Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe, test it out as well
-- One to let users add a ingredient **admin auth?**
-    - Scrape all the ingredients from this [site](https://food.ndtv.com/ingredient) and att it to the Ingredient Table
 - Change all end points to routes with their corresponding database calls to functions for readability and testing.
 - One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
 - One to create the recipe of a user_id with title, description, difficulty, dish_image
@@ -189,10 +185,14 @@ These are the routes that will be roughly implemented some will be in steps whil
     - One to add the RecipeIngredient/Ingredient (Ingredient will autocomplete if it doesn't exist it will insert or else just insert into RecipeIngredient)
         Make sure to also when inserting that Ingredient query runs first and then RecipeIngredient query.
     - Instructions 
-- Retry all the routes that need a access token once the login is created
-- One for a user to view their user info, saved recipes, created recipes and comments **auth**
+
+### Create a recipe
+
+### AWS Bucket
+Well I stopped upload pictures to the database, now they're in a bucket. And to be honest I liked my solution better although some npm packages were required it felt like a pretty good solution honestly but this is a more scalable approach, a scale I'll never achieve with this website + the aws documentation is trash. 
 
 ### Access user information
+Easy as pie, works great with the auth as well, the auth is also type safe using Honos examples from github, basically I did what they did when creating their middleware.
 
 ### Increased security and performance
 I came across this reddit thread where someone asked if they could [roast their express server](https://www.reddit.com/r/node/comments/17eg2m5/roast_my_serverts_code_of_express_and_what_to/). And in this thread I could see my own node server being roasted, no security headers like [helmet.js](https://helmetjs.github.io/), but Hono has their own version of it, or api rate limits to stop brute force attacks, well I thought of implementing it but Hono doesn't have a rate limit implementation so I'm required to implement one myself which will be insightful. If I want to increase [performance](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/performance.md) I would need to enable WAL mode for concurrent reads as well as look out for checkpoint starvation of when the database becomes to big, for this project it's unnecessary since I won't have a large user base but trying it out doesn't hurt. So at what size do I consider a database to be large? Well 2gbs sounds pretty big right? And if we do the math of having a profile pic being 2mbs and a recipe image being 6mb. If we only upload pictures then the db can store 1024 profile pictures, if a were to only have recipe images that would be 341 recipe pictures. If I want a 50/50 split between profile pics and recipe pics that would be around 256 users, where each user is only allowed to create one recipe which is stupid, but since this is a hobby project storing a bunch of image should be acceptable right? Yes and no, I know that you shouldn't store images in the database and the optimal solution is to store them in something like AWS S3, but that requires a credit card and currently I'm poor, like really poor and if some schmuck decides to attack me it could ruin my already non existent financial situation. So this is the end when comes to storing images the correct way... Well not really 'cos apparently they accept pre paid credit cards for some reason, I went to my local gas market and asked if they could sell me a pre paid credit card, the cashier looked at me and said, there is no point in buying these 'cos they are discontinued as to avoid money laundering, mfer thought I was a criminal. I went to another gas market, asked the same thing and they told me no we don't sell them anymore, as the looked at me all suspicious. And then I went to the third gas market same franchise and saw that they had them on the wall I took it and asked if I can buy one, the cashier looked at me said yes, I paid and ask about how to activate it and she just activate it online don't worry you don't need any ID to validate that its you buying it... So now I can store images probably in the cloud without bloating the database. But there was one thing bothering me, how large is a large database then? Well it depends again on what type of data you have in there but somewhere above 50gbs so what I tried to do was optimizing my database for 2gbs because I read somewhere that concurrency isn't that great with SQLite especially as it becomes larger... I will never achieve those heights but at least I know that when and where to look when it comes to optimizing SQLite databases. 

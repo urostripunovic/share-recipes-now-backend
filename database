@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS User (
     user_name TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     display_name TEXT,
-    profile_image BLOB,
+    profile_image TEXT,
     bio TEXT,
     auth_method TEXT
 );
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS Recipe (
     description TEXT NOT NULL,
     difficulty INTEGER NOT NULL CHECK (difficulty >= 0 AND difficulty <= 5),
     time INTEGER NOT NULL CHECK (time >= 0),
-    dish_image BLOB,
+    dish_image TEXT,
     UNIQUE (user_id, title),
     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
 );
