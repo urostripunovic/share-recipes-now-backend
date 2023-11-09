@@ -59,7 +59,6 @@ app.use("*", async (c, next) => {
     await next();
 });
 
-
 app.get("/test", cookieAuth(), async (c) => {
     try {
         const user = c.var.user;

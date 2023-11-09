@@ -105,7 +105,10 @@ const removeRefreshToken = (
             )
             .get(refreshToken) as any;
 
-        //Someone tries to reuse a token from when the user hasn't logged out and back in after a while, log them out of everything
+        /**
+         * Someone tries to reuse a token from when the user hasn't logged out and back in after a while 
+         * with a expired token in the browser, log them out of everything
+        */
         if (!userToken?.refresh_token) db.prepare("DELETE FROM Session WHERE user_id = ?").run(userToken.user_id);
         
     });

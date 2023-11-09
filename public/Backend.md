@@ -176,7 +176,7 @@ UX would look something like this:
 
 These are the routes that will be roughly implemented some will be in steps while others is one API call. 
 - Implement the api.ts file or not see how easy it is. Implement all the types and import them where needed
-- Implement a rate limit for login, there is a [npm package for it using redis](https://github.com/upstash/ratelimit#install)
+- Implement a rate limit for login, there is a [npm package for it using redis](https://github.com/upstash/ratelimit#install) or [create my own rate limit using redis](https://medium.com/@elangoram1998/create-a-rate-limiter-using-node-js-express-js-and-redis-cache-b5a0f7debf2b)
 - Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe, test it out as well
 - Change all end points to routes with their corresponding database calls to functions for readability and testing.
 - One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
