@@ -1,6 +1,6 @@
 import { FileTypeResult, fileTypeFromBuffer } from "file-type";
 import dotenv from "dotenv";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 dotenv.config();
 const s3 = new S3Client({
@@ -16,14 +16,26 @@ export async function uploadToBucket(image: Blob, defaultPic: string = process.e
     try {
         await s3.send(
             new PutObjectCommand({
-                ACL: "public-read",
+                ACL: "public-read-write",
                 Body: Buffer.from(await image.arrayBuffer()),
                 Bucket: process.env.BUCKET!,
                 ContentType: image.type,
                 Key: image.name,
             })
         );
-        return process.env.LOCATION! + "" + image.name.replace(/\s/g, "+"); //whitespace needs to change to + for aws
+        return process.env.LOCATION! + "" + image.name.replace(/\s+/g, "+"); //whitespace needs to change to + for aws
+    } catch (error) {
+        return error;
+    }
+}
+
+export async function removeFromBucket(location: string): Promise<void> {
+    try {
+        await s3.send(new DeleteObjectCommand({
+            Bucket: process.env.BUCKET!,
+            Key: location,
+        }))
+        return;
     } catch (error) {
         return error;
     }

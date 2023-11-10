@@ -10,7 +10,6 @@ type Variables = {
     user: {
         user_id: string;
     };
-    recipe_id?: number;
     database: Database;
 };
 
@@ -140,7 +139,7 @@ create_recipe.post("/create-recipe/instruction", async (c) => {
             statement.run(recipe_id,max_order + 1, sanitizedInstruction);
             
         });
-        
+
         insert();
         return c.json({ created: true }, 201);
     } catch (error) {
