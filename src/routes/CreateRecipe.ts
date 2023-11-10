@@ -113,9 +113,9 @@ create_recipe.delete("/create-recipe/ingredient", (c) => {
     const { recipe_id, ingredient_id } = c.req.query();
     try {
         c.var.database.prepare("DELETE RecipeIngredient WHERE recipe_id = ? AND ingredient_id = ?").run(recipe_id, ingredient_id)
-        return c.json({}, 200);
+        return c.body(null, 200);
     } catch (error) {
-        return c.json({error: error.message}, 304);
+        return c.body(null, 304);
     }
 })
 
@@ -156,8 +156,8 @@ create_recipe.delete("/create-recipe/instruction", (c) => {
                 .run(recipe_id, instruction_order);
         });
         removeInstruction();
-        return c.json({}, 200);
+        return c.body(null, 200);
     } catch (error) {
-        return c.json({}, 304);
+        return c.body(null, 304);
     }
 })
