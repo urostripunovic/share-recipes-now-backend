@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import path from "path";
+import fs from "node:fs";
 import Database, { Database as db } from "better-sqlite3";
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
@@ -8,14 +9,13 @@ import { handle } from "@hono/node-server/vercel";
 import { cors } from "hono/cors";
 import { cookieAuth } from "./middleware/auth";
 import { recipes, authUserAction, userAction } from "./routes/Routes";
-import fs from "node:fs";
 import { html } from "hono/html";
 import { uploadToBucket } from "./utils/utils";
 
 dotenv.config();
 
 //config database
-const db = new Database(path.resolve("test.db")/*, { verbose: console.log }*/);
+const db = new Database(path.resolve("test.db"));
 db.pragma("journal_mode = WAL");
 const unacceptableSize = 25 * 1024 * 1024 * 1024; // 10 gbs in bytes
 setInterval(

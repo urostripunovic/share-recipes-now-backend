@@ -12,6 +12,12 @@ const s3 = new S3Client({
     region: process.env.REGION!,
 });
 
+/**
+ * Upload images to s3 bucket
+ * @param image 
+ * @param defaultPic if there is no second parameter then the default image is a picture of a seal
+ * @returns the url location of the image file 
+ */
 export async function uploadToBucket(image: Blob, defaultPic: string = process.env.DEFAULT_PROFILE_PIC!): Promise<String> {
     if (!image) return defaultPic;
     try {
