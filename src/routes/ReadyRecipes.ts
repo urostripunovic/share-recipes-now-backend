@@ -7,19 +7,19 @@ type Variables = {
 
 export const ready_recipes = new Hono<{ Variables: Variables }>();
 
-ready_recipes.get("/fast-food", async (c) => {
+ready_recipes.get("/fast-food", (c) => {
     
     try {
-        const json = await fastOrRatedFood(c.var.database);
+        const json = fastOrRatedFood(c.var.database);
         return c.json(json, 200);
     } catch (error) {
         return c.json({ error }, 500);
     }
 });
 
-ready_recipes.get("/top-rated-food", async (c) => {
+ready_recipes.get("/top-rated-food", (c) => {
     try {
-        const json = await fastOrRatedFood(c.var.database, true);
+        const json = fastOrRatedFood(c.var.database, true);
         return c.json(json, 200);
     } catch (error) {
         return c.json({ error }, 500);
@@ -46,9 +46,9 @@ type Recipe = {
  * @returns {Recipe[]} - An array of recipe objects.
  * @throws {Error} If there's an error during the database query.
  */
-export async function fastOrRatedFood(db: Database): Promise<Recipe[]>;
-export async function fastOrRatedFood(db: Database, score: boolean): Promise<Recipe[]>;
-export async function fastOrRatedFood(db: Database, score?: boolean): Promise<Recipe[]> {
+export function fastOrRatedFood(db: Database):Recipe[];
+export function fastOrRatedFood(db: Database, score: boolean): Recipe[];
+export function fastOrRatedFood(db: Database, score?: boolean): Recipe[] {
     const part_of_query = score ? "avg_score >= 4.2" : "R.time < 30";
 
     try {

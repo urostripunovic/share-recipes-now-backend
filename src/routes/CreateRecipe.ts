@@ -93,20 +93,6 @@ create_recipe.post("/create-recipe/recipe", async (c) => {
     }
 })
 
-type Recipe = {
-    amount: string
-    instruction: string
-}
-
-/*
-
-{ ingredient_id: 1, name: 'Pasta' },       
-{ ingredient_id: 2, name: 'Tomato Sauce' },
-{ ingredient_id: 3, name: 'Ground Beef' }, 
-{ ingredient_id: 21, name: 'lentils' } 
-
-*/
-
 create_recipe.post("/create-recipe/ingredient", async (c) => {
     //if recipe endpoint is successful then use that recipe_id to add recipe ingredients from the tuple input
     const { ingredient_id, amount, recipe_id } = await c.req.parseBody();
@@ -137,7 +123,6 @@ create_recipe.post("/create-recipe/instruction", async (c) => {
         const insert = c.var.database.transaction(() => {
             const { max_order } = maxOrder.get(recipe_id) as Order;
             statement.run(recipe_id,max_order + 1, sanitizedInstruction);
-            
         });
 
         insert();

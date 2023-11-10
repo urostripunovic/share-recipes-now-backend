@@ -48,7 +48,7 @@ type Recipe = {
     description: string;
     difficulty: string;
     time: number;
-    dish_image: ArrayBuffer | String | undefined;
+    dish_image: string;
 };
 
 function getRecipe(db: Database, id: string): Recipe {

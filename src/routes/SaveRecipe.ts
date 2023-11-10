@@ -29,9 +29,9 @@ save_recipe.get("/save-recipe/:recipe_id", async (c) => {
 
 //middleware här också
 save_recipe.delete("/save-recipe/:recipe_id", async (c) => {
-    //const { user_id } = c.var.user;
+    const { user_id } = c.var.user;
     const id = c.req.param("recipe_id");
-    const user_id = 1;
+    //const user_id = 1;
 
     try {
         c.var.database.prepare(`DELETE FROM Saved WHERE user_id = ? AND recipe_id = ?`).run(
