@@ -1,6 +1,7 @@
 import { FileTypeResult, fileTypeFromBuffer } from "file-type";
 import dotenv from "dotenv";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import crypto from "crypto"
 
 dotenv.config();
 const s3 = new S3Client({
@@ -14,18 +15,21 @@ const s3 = new S3Client({
 export async function uploadToBucket(image: Blob, defaultPic: string = process.env.DEFAULT_PROFILE_PIC!): Promise<String> {
     if (!image) return defaultPic;
     try {
+        const location = image.name+"/"+crypto.randomUUID();
         await s3.send(
             new PutObjectCommand({
                 ACL: "public-read-write",
                 Body: Buffer.from(await image.arrayBuffer()),
                 Bucket: process.env.BUCKET!,
                 ContentType: image.type,
-                Key: image.name,
+                Key: location,
             })
         );
-        return process.env.LOCATION! + "" + image.name.replace(/\s+/g, "+"); //whitespace needs to change to + for aws
+        //let's two different images with the same name be uploaded
+        //whitespace needs to change to + for aws .replace(/\s+/g, "+") /crypto.randomUUID()
+        return process.env.LOCATION!+""+location; 
     } catch (error) {
-        return error;
+        return defaultPic;
     }
 }
 
