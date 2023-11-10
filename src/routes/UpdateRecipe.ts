@@ -9,3 +9,8 @@ type Variables = {
 };
 
 export const update_recipe = new Hono<{ Variables: Variables }>();
+
+//update diff, time, bio of recipe, can't with the title
+//update ingredient and amount
+//update instruction as well as move around instructions
+

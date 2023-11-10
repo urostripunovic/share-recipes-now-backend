@@ -68,7 +68,7 @@ create_recipe.post("/create-recipe/recipe", async (c) => {
     const user_id = 1;
     const { title, difficulty, time, dish_image, description } = await c.req.parseBody();
     
-    if (filter.isProfane(title) || filter.isProfane(description)) return c.json({msg: "Profanity"}, 406);
+    if (filter.isProfane(title) || filter.isProfane(description)) return c.json({msg: "Watch your profanity"}, 406);
     
     const sanitizedTitle = validateString(title as string);
     const sanitizedDescription = validateString(description as string);
@@ -109,6 +109,16 @@ create_recipe.post("/create-recipe/ingredient", async (c) => {
     }
 })
 
+create_recipe.delete("/create-recipe/ingredient", (c) => {
+    const { recipe_id, ingredient_id } = c.req.query();
+    try {
+        c.var.database.prepare("DELETE RecipeIngredient WHERE recipe_id = ? AND ingredient_id = ?").run(recipe_id, ingredient_id)
+        return c.json({}, 200);
+    } catch (error) {
+        return c.json({error: error.message}, 304);
+    }
+})
+
 type Order = {
     max_order: number;
 };
@@ -130,5 +140,24 @@ create_recipe.post("/create-recipe/instruction", async (c) => {
     } catch (error) {
         return c.json({ error: error.message }, 406)
     }
+})
 
+create_recipe.delete("/create-recipe/instruction", (c) => {
+    const { recipe_id, instruction_order } = c.req.query();
+    try {
+        const removeInstruction = c.var.database.transaction(() => {
+            c.var.database.prepare(
+                "DELETE FROM Instruction WHERE recipe_id = ? AND instruction_order = ?")
+                .run(recipe_id, instruction_order);
+            c.var.database.prepare(
+                `UPDATE Instruction 
+                SET instruction_order = instruction_order - 1
+                WHERE recipe_id = ? AND instruction_order > ?`)
+                .run(recipe_id, instruction_order);
+        });
+        removeInstruction();
+        return c.json({}, 200);
+    } catch (error) {
+        return c.json({}, 304);
+    }
 })
