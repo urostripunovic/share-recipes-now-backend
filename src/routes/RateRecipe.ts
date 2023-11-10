@@ -19,7 +19,7 @@ rate_recipe.post("/rate-recipe/:recipe_id", async (c) => {
     try {
         db.prepare(
             `INSERT OR REPLACE INTO Score (user_id, recipe_id, score) VALUES (?, ?, ?)
-            ON CONFLICT (user_id, recipe_id) DO UPDATE SET score=${score}
+            ON CONFLICT (user_id, recipe_id) DO UPDATE SET score = ${score}
             `
         ).run(user_id, recipe_id, score);
 

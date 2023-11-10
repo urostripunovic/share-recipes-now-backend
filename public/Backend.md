@@ -180,13 +180,12 @@ These are the routes that will be roughly implemented some will be in steps whil
 - Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe, test it out as well
 - Change all end points to routes with their corresponding database calls to functions for readability and testing.
 - One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
-- One to create the recipe of a user_id with title, description, difficulty, dish_image
-    The next step are the following to fill up the recipe:
-    - One to add the RecipeIngredient/Ingredient (Ingredient will autocomplete if it doesn't exist it will insert or else just insert into RecipeIngredient)
-        Make sure to also when inserting that Ingredient query runs first and then RecipeIngredient query.
-    - Instructions 
+
+### Update recipe 
+
 
 ### Create a recipe
+Creating it required some design decision, I wasn't really sure how the form process would be like since I want instructions and recipe ingredients to be dynamic meaning that a user can be add as many instructions or recipe ingredients as they would like. The idea is to have it transactional i.e three forms, first the user creates a recipe and then the user is allowed to insert recipe ingredients and instructions with a established recipe_id, this would then in turn send a recipe id to the client. I first wanted to have the recipe id on the server but to set global variables need to be done in a context. Creating a recipe inside a middleware is not good, why? I don't know but I know that it shouldn't. So I don't know how to solve this in a clever way. I remembered to sanitize the inputs but not the profanity... I don't know if I really want invest time and into creating a profanity filter since I really don't want to write out some really wile and nasty shit, so I'm using a simple [bad words filter](https://www.npmjs.com/package/bad-words), some people are just assholes. Also the best way to avoid vile shit coming into the database would be to have a API key. I also don't have any plans to secure the api with api keys, I might implement it I'm not sure. The idea of this project just for fun not commercial use. Other than using the recipe id the implementation wasn't hard at all, the only troubling thing was how I would work with the COALESCE key and that was to break it out as a separate prepare statement and then execute it in transaction.
 
 ### AWS Bucket
 Well I stopped upload pictures to the database, now they're in a bucket. And to be honest I liked my solution better although some npm packages were required it felt like a pretty good solution honestly but this is a more scalable approach, a scale I'll never achieve with this website + the aws documentation is trash. 

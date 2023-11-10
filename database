@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS Recipe (
     user_id INTEGER NOT NULL,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
-    difficulty INTEGER NOT NULL CHECK (difficulty >= 0 AND difficulty <= 5),
-    time INTEGER NOT NULL CHECK (time >= 0),
+    difficulty INTEGER NOT NULL CHECK (difficulty > 0 AND difficulty <= 5),
+    time INTEGER NOT NULL CHECK (time > 0),
     dish_image TEXT,
     UNIQUE (user_id, title),
     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS Ingredient (
 CREATE TABLE IF NOT EXISTS RecipeIngredient (
     recipe_id INTEGER NOT NULL,
     ingredient_id INTEGER NOT NULL,
-    amount TEXT,
+    amount TEXT NOT NULL,
     PRIMARY KEY (recipe_id, ingredient_id),
     FOREIGN KEY (recipe_id) REFERENCES Recipe(recipe_id) ON DELETE CASCADE,
     FOREIGN KEY (ingredient_id) REFERENCES Ingredient(ingredient_id)

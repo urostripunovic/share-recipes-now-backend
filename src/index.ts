@@ -28,7 +28,9 @@ setInterval(
     }),5000).unref();
 
 //console.log(db.prepare(`SELECT * FROM Session`).all().length);
-//console.log(db.prepare(`SELECT * FROM User WHERE user_name = ?`).get("test_user_13"));
+//console.log(db.prepare(`SELECT * FROM Instruction WHERE recipe_id = ?`).all(8));
+//db.prepare("DELETE FROM Recipe WHERE recipe_id = 7").run();
+
 
 type Variables = {
     database: db;

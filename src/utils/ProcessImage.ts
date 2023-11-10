@@ -11,8 +11,8 @@ const s3 = new S3Client({
     region: process.env.REGION!,
 });
 
-export async function uploadToBucket(image: Blob): Promise<String> {
-    if (!image) return process.env.DEFAULT_PROFILE_PIC!;
+export async function uploadToBucket(image: Blob, defaultPic: string = process.env.DEFAULT_PROFILE_PIC!): Promise<String> {
+    if (!image) return defaultPic;
     try {
         await s3.send(
             new PutObjectCommand({
@@ -23,7 +23,7 @@ export async function uploadToBucket(image: Blob): Promise<String> {
                 Key: image.name,
             })
         );
-        return process.env.LOCATION! + "" + image.name;
+        return process.env.LOCATION! + "" + image.name.replace(/\s/g, "+"); //whitespace needs to change to + for aws
     } catch (error) {
         return error;
     }
