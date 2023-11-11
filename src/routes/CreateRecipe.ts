@@ -101,7 +101,7 @@ create_recipe.post("/create-recipe/ingredient", async (c) => {
         c.var.database.prepare(`
             INSERT INTO RecipeIngredient (recipe_id, ingredient_id, amount) 
             VALUES (?, ?, NULLIF(?, ''))`)
-            .run(recipe_id, ingredient_id, amount)
+            .run(recipe_id, ingredient_id, validateString(amount as string))
     
         return c.json({ created: true }, 201); 
     } catch (error) {
@@ -115,7 +115,7 @@ create_recipe.delete("/create-recipe/ingredient", (c) => {
         c.var.database.prepare("DELETE FROM RecipeIngredient WHERE recipe_id = ? AND ingredient_id = ?").run(recipe_id, ingredient_id)
         return c.body(null, 200);
     } catch (error) {
-        return c.body(null, 304);
+        return c.body("Nothing was deleted", 304);
     }
 })
 
@@ -144,6 +144,7 @@ create_recipe.post("/create-recipe/instruction", async (c) => {
 
 create_recipe.delete("/create-recipe/instruction", (c) => {
     const { recipe_id, instruction_order } = c.req.query();
+    if (isNaN(Number(instruction_order))) return c.json({ error: "Instruction is not a number" }, 400);
     try {
         const removeInstruction = c.var.database.transaction(() => {
             c.var.database.prepare(
@@ -158,6 +159,6 @@ create_recipe.delete("/create-recipe/instruction", (c) => {
         removeInstruction();
         return c.body(null, 200);
     } catch (error) {
-        return c.body(null, 304);
+        return c.body("Nothing was deleted", 304);
     }
 })

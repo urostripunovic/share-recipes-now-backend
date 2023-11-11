@@ -174,16 +174,17 @@ UX would look something like this:
 - Last step is to provide a list of instructions. The user can add a new one for each click 
 
 
-These are the routes that will be roughly implemented some will be in steps while others is one API call. 
+These are the routes that will be roughly implemented some will be in steps while others is one API call.
+- I forgot that a user can delete comments and recipes or change images, it's possible but nah 
 - Implement the api.ts file or not see how easy it is. Implement all the types and import them where needed
 - Implement a rate limit for login, there is a [npm package for it using redis](https://github.com/upstash/ratelimit#install) or [create my own rate limit using redis](https://medium.com/@elangoram1998/create-a-rate-limiter-using-node-js-express-js-and-redis-cache-b5a0f7debf2b)
 - Redo the comment table to ensure that the comments reset for each post and that they have a unique key with their recipe, test it out as well
 - Change all end points to routes with their corresponding database calls to functions for readability and testing.
 - One for the user to update their recipes, RecipeIngredient, Instruction and Recipe
-- Test the delete end points for ingredient and instruction
+- Fixa byta ordning på instructionerna + se till att man ska kunna ladda upp en bild när man updaterar recept
 
 ### Update recipe 
-
+Updating the recipe was a bit of a challenge as I didn't know how I could only update certain fields, the idea was to send to the server what parts of the form has changed so if only the desc has changed then only that part is sent to the server. Doing this with a form isn't possible so I would need to send a JSON object, the next part was constructing the string for what to update, I forgot that `.join()` existed so I did some embarrassing attempts at concatenating a string from an object... I also added a end point to see if the current user for that session is able to update the recipe, the idea is to have an update button on the page for the correct user to update it and that button is hidden for the other users. I also just noticed that I won't be able to update the image if I send in the JSON unless I let the frontend handle the upload on their send and return a url path to the image...
 
 ### Create a recipe
 Creating it required some design decision, I wasn't really sure how the form process would be like since I want instructions and recipe ingredients to be dynamic meaning that a user can be add as many instructions or recipe ingredients as they would like. The idea is to have it transactional i.e three forms, first the user creates a recipe and then the user is allowed to insert recipe ingredients and instructions with a established recipe_id, this would then in turn send a recipe id to the client. I first wanted to have the recipe id on the server but to set global variables need to be done in a context. Creating a recipe inside a middleware is not good, why? I don't know but I know that it shouldn't. So I don't know how to solve this in a clever way. I remembered to sanitize the inputs but not the profanity... I don't know if I really want invest time and into creating a profanity filter since I really don't want to write out some really wile and nasty shit, so I'm using a simple [bad words filter](https://www.npmjs.com/package/bad-words), some people are just assholes. Also the best way to avoid vile shit coming into the database would be to have a API key. I also don't have any plans to secure the api with api keys, I might implement it I'm not sure. The idea of this project just for fun not commercial use. Other than using the recipe id the implementation wasn't hard at all, the only troubling thing was how I would work with the COALESCE key and that was to break it out as a separate prepare statement and then execute it in transaction.

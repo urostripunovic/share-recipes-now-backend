@@ -29,8 +29,8 @@ setInterval(
 
 //console.log(db.prepare(`SELECT * FROM Session`).all().length);
 //console.log("-------")
-//console.log(db.prepare(`SELECT * FROM Instruction WHERE recipe_id = ?`).all(8));
-//console.log(db.prepare(`SELECT * FROM Ingredient`).all());
+console.log(db.prepare(`SELECT * FROM Instruction WHERE recipe_id = ?`).all(8));
+//console.log(db.prepare(`SELECT * FROM Recipe WHERE recipe_id = 8`).get());
 //console.log(db.prepare(`SELECT * FROM RecipeIngredient WHERE recipe_id = ?`).all(8));
 //console.log("-------")
 //db.prepare("DELETE FROM Recipe WHERE recipe_id = 7").run();
