@@ -57,9 +57,14 @@ export function validateForm() {
      * @param image file
      * @returns boolean if the file size it so big
      */
+    const limit = 8;
     function validateFileSize(image: File): boolean {
-        const unacceptableSize = 6 * 1024 * 1024; // 6 mbs in bytes
+        const unacceptableSize = limit * 1024 * 1024; // 8 mbs in bytes
         return image.size < unacceptableSize;
+    }
+
+    function getValidLimitFileSize(): number {
+        return limit;
     }
 
     return { 
@@ -67,6 +72,7 @@ export function validateForm() {
         validateEmail, 
         validateUsername, 
         validateFileType, 
-        validateFileSize 
+        validateFileSize,
+        getValidLimitFileSize 
     }
 }

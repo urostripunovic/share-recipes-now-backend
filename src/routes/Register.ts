@@ -5,6 +5,7 @@ import {
     validateString,
     validateForm,
     uploadToBucket,
+    fileSize,
 } from "../utils/utils";
 
 const salt = bcrypt.genSaltSync(10);
@@ -44,7 +45,7 @@ register.get("/register/exists", (c) => {
 register.post("/register/", async (c) => {
     const db = c.var.database;
     const { user_name, password, email, image } = await c.req.parseBody();
-
+    const form = validateForm();
     //Check if user name exists + sanitize
     const safeUsername = validateString(user_name as string);
     if(checkExistence(db, { key: "user_name", value: safeUsername })) 
@@ -57,25 +58,24 @@ register.post("/register/", async (c) => {
         return c.body("Email is already in use", 406)
     
     //Check if email and username have the correct regex
-    if (!validateForm().validateUsername(safeUsername)) 
+    if (!form.validateUsername(safeUsername)) 
         return c.body("Wrong username format", 406);
-    else if (!validateForm().validateEmail(safeEmail))  
+    else if (!form.validateEmail(safeEmail))  
         return c.body("Wrong email format", 406);
 
     //sanitation and password validation again.
     const safePassword = validateString(password as string);
-    if (!validateForm().validatePassword(safePassword)) 
+    if (!form.validatePassword(safePassword)) 
         return c.body("Password is to weak", 406);
     //Salt and has password
     const pass_word: string = await bcrypt.hash(safePassword, salt);
 
     //handle image types
     if (image) {
-        if (!validateForm().validateFileType(image as File)) {
+        if (!form.validateFileType(image as File)) {
             return c.body("Wrong file type", 406);
-        } else if (!validateForm().validateFileSize(image as File)) {
-            const size = ((image as File).size/(1024*1024)).toFixed(1);
-            return c.body(`File size is ${size}MB, keep it to 6MB`, 406);
+        } else if (!form.validateFileSize(image as File)) {
+            return c.body(`File size is ${fileSize(image as File)}MB, keep it to ${form.getValidLimitFileSize()}MB`, 406);
         }
     }
     const profile_image = await uploadToBucket(image as Blob);
