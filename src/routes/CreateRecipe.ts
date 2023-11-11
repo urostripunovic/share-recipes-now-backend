@@ -96,7 +96,7 @@ create_recipe.post("/create-recipe/recipe", async (c) => {
 create_recipe.post("/create-recipe/ingredient", async (c) => {
     //if recipe endpoint is successful then use that recipe_id to add recipe ingredients from the tuple input
     const { ingredient_id, amount, recipe_id } = await c.req.parseBody();
-    console.log(ingredient_id, amount, recipe_id)
+    //console.log(ingredient_id, amount, recipe_id)
     try {
         c.var.database.prepare(`
             INSERT INTO RecipeIngredient (recipe_id, ingredient_id, amount) 
@@ -112,7 +112,7 @@ create_recipe.post("/create-recipe/ingredient", async (c) => {
 create_recipe.delete("/create-recipe/ingredient", (c) => {
     const { recipe_id, ingredient_id } = c.req.query();
     try {
-        c.var.database.prepare("DELETE RecipeIngredient WHERE recipe_id = ? AND ingredient_id = ?").run(recipe_id, ingredient_id)
+        c.var.database.prepare("DELETE FROM RecipeIngredient WHERE recipe_id = ? AND ingredient_id = ?").run(recipe_id, ingredient_id)
         return c.body(null, 200);
     } catch (error) {
         return c.body(null, 304);
